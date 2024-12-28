@@ -1,0 +1,138 @@
+\doxysection{F\+:/\+Dev/\+Parrot/parrot\+\_\+main.c File Reference}
+\hypertarget{parrot__main_8c}{}\label{parrot__main_8c}\index{F:/Dev/Parrot/parrot\_main.c@{F:/Dev/Parrot/parrot\_main.c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include "{}parrot.\+h"{}}\newline
+{\ttfamily \#include "{}pico/stdlib.\+h"{}}\newline
+{\ttfamily \#include "{}pico/multicore.\+h"{}}\newline
+{\ttfamily \#include "{}hardware/dma.\+h"{}}\newline
+{\ttfamily \#include "{}hardware/adc.\+h"{}}\newline
+{\ttfamily \#include "{}i2s/i2s.\+h"{}}\newline
+{\ttfamily \#include "{}psram\+\_\+spi.\+h"{}}\newline
+{\ttfamily \#include "{}hardware/sync.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{parrot__main_8c_ad17104e92409e30258a08ef6c2ed17b3}\label{parrot__main_8c_ad17104e92409e30258a08ef6c2ed17b3} 
+int {\bfseries get\+\_\+sign} (int32\+\_\+t value)
+\item 
+void \mbox{\hyperlink{parrot__main_8c_a0882689ae327acfabbb12bd78cc7e16d}{check\+Reset}} ()
+\begin{DoxyCompactList}\small\item\em Check for the Rotary Encoder button push. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{parrot__main_8c_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}} ()
+\begin{DoxyCompactList}\small\item\em Main program entry point. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{parrot__main_8c_ac555310904b58878c17cbe950aa087b0}\label{parrot__main_8c_ac555310904b58878c17cbe950aa087b0} 
+uint32\+\_\+t {\bfseries Read\+Pointer} = 0
+\item 
+\Hypertarget{parrot__main_8c_a283b67b14f146dbdae08dcfb9b3259c1}\label{parrot__main_8c_a283b67b14f146dbdae08dcfb9b3259c1} 
+uint32\+\_\+t {\bfseries Write\+Pointer} = 0
+\item 
+\Hypertarget{parrot__main_8c_a637ed802eeffccca74e9ea7e2ab729d5}\label{parrot__main_8c_a637ed802eeffccca74e9ea7e2ab729d5} 
+float {\bfseries glb\+Feedback} = 0.\+1
+\item 
+\Hypertarget{parrot__main_8c_ade4c3293feef1039a1321536183b5ab8}\label{parrot__main_8c_ade4c3293feef1039a1321536183b5ab8} 
+float {\bfseries glb\+Divisor} = 1
+\item 
+\Hypertarget{parrot__main_8c_ace2ee0a67733422f866c0856a2f6c626}\label{parrot__main_8c_ace2ee0a67733422f866c0856a2f6c626} 
+uint32\+\_\+t {\bfseries encoder\+\_\+tick} = 0
+\item 
+\Hypertarget{parrot__main_8c_a6aa2f30691bc3872d6a19a90dd200684}\label{parrot__main_8c_a6aa2f30691bc3872d6a19a90dd200684} 
+uint32\+\_\+t {\bfseries glb\+Delay}
+\item 
+\Hypertarget{parrot__main_8c_ae298eaa20a8e2c4a190d13f16dc9ae05}\label{parrot__main_8c_ae298eaa20a8e2c4a190d13f16dc9ae05} 
+uint32\+\_\+t {\bfseries target\+Delay}
+\item 
+\Hypertarget{parrot__main_8c_aea8be3b13319315ac2941535a39037b1}\label{parrot__main_8c_aea8be3b13319315ac2941535a39037b1} 
+int32\+\_\+t {\bfseries Previous\+Clock\+Period} = 0
+\item 
+\Hypertarget{parrot__main_8c_a1b0ae65de18e8470519861ecaa5bc95c}\label{parrot__main_8c_a1b0ae65de18e8470519861ecaa5bc95c} 
+uint32\+\_\+t {\bfseries glb\+Increment} = 1
+\item 
+\Hypertarget{parrot__main_8c_adb1c2b4c2370045d29f5678c2b73aada}\label{parrot__main_8c_adb1c2b4c2370045d29f5678c2b73aada} 
+int {\bfseries spinlock\+\_\+num\+\_\+glb\+Delay}
+\item 
+\Hypertarget{parrot__main_8c_a4be5364d8c7aaa805ad6124a822f0fe7}\label{parrot__main_8c_a4be5364d8c7aaa805ad6124a822f0fe7} 
+spin\+\_\+lock\+\_\+t \texorpdfstring{$\ast$}{*} {\bfseries spinlock\+\_\+glb\+Delay}
+\item 
+\Hypertarget{parrot__main_8c_a9d43969205916404e43965cd65ed2e1a}\label{parrot__main_8c_a9d43969205916404e43965cd65ed2e1a} 
+int {\bfseries Algorithm} = 0
+\item 
+\Hypertarget{parrot__main_8c_a0254797ddd6d1744dfa5d6d2a9bbcf59}\label{parrot__main_8c_a0254797ddd6d1744dfa5d6d2a9bbcf59} 
+int {\bfseries rampcount} = 0
+\item 
+\Hypertarget{parrot__main_8c_a41fdb578777a045e56dd3ad408cb128d}\label{parrot__main_8c_a41fdb578777a045e56dd3ad408cb128d} 
+int {\bfseries This\+Left}
+\item 
+\Hypertarget{parrot__main_8c_a06106cda2c60a89064e9d27c8085991c}\label{parrot__main_8c_a06106cda2c60a89064e9d27c8085991c} 
+int {\bfseries Previous\+Left}
+\item 
+\Hypertarget{parrot__main_8c_a6827e4faa914e292e5aa61ceb50bdfb3}\label{parrot__main_8c_a6827e4faa914e292e5aa61ceb50bdfb3} 
+int {\bfseries This\+Right}
+\item 
+\Hypertarget{parrot__main_8c_af6ae070c0e57a3ec2bf85b62c051c15a}\label{parrot__main_8c_af6ae070c0e57a3ec2bf85b62c051c15a} 
+int {\bfseries Previous\+Right}
+\item 
+\Hypertarget{parrot__main_8c_a8a8ebb7dcab8c051ca45b0da0186a5cf}\label{parrot__main_8c_a8a8ebb7dcab8c051ca45b0da0186a5cf} 
+float {\bfseries glb\+Wet} = 0
+\item 
+\Hypertarget{parrot__main_8c_ad7a585b9ac22f4e71dd43c8caa15e6e0}\label{parrot__main_8c_ad7a585b9ac22f4e71dd43c8caa15e6e0} 
+float {\bfseries glb\+Dry} = 1
+\item 
+float \mbox{\hyperlink{parrot__main_8c_a5d8ff28893901c00f6792c86ecb5bd01}{divisors}} \mbox{[}$\,$\mbox{]} = \{1,2,3,4,5,6,8,12,1,0.\+5,0.\+33333,0.\+25,0.\+2,0.\+166666,0.\+125,0.\+083333\}
+\begin{DoxyCompactList}\small\item\em An array of multipliers, which are applied to the master internal or external clock frequency to set the delay time as a multiple of the clock period. \end{DoxyCompactList}\item 
+\Hypertarget{parrot__main_8c_af958432adf242f882e07a92f4689ecc8}\label{parrot__main_8c_af958432adf242f882e07a92f4689ecc8} 
+psram\+\_\+spi\+\_\+inst\+\_\+t \texorpdfstring{$\ast$}{*} {\bfseries async\+\_\+spi\+\_\+inst}
+\item 
+\Hypertarget{parrot__main_8c_a93bb8fa320fe4e166005fc4f0c0b2705}\label{parrot__main_8c_a93bb8fa320fe4e166005fc4f0c0b2705} 
+psram\+\_\+spi\+\_\+inst\+\_\+t {\bfseries psram\+\_\+spi}
+\item 
+\Hypertarget{parrot__main_8c_ab7de02793c1a9ed4d17aeaf1503ec514}\label{parrot__main_8c_ab7de02793c1a9ed4d17aeaf1503ec514} 
+{\bfseries tap\+\_\+element}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Main program entry point
+
+Project homepage\+: \href{https://github.com/audiomorphology/Parrot}{\texttt{ https\+://github.\+com/audiomorphology/\+Parrot}} 
+
+\doxysubsection{Function Documentation}
+\Hypertarget{parrot__main_8c_a0882689ae327acfabbb12bd78cc7e16d}\index{parrot\_main.c@{parrot\_main.c}!checkReset@{checkReset}}
+\index{checkReset@{checkReset}!parrot\_main.c@{parrot\_main.c}}
+\doxysubsubsection{\texorpdfstring{checkReset()}{checkReset()}}
+{\footnotesize\ttfamily \label{parrot__main_8c_a0882689ae327acfabbb12bd78cc7e16d} 
+void check\+Reset (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Check for the Rotary Encoder button push. 
+
+This zeroes out the entire delay buffer. Saving and disabling interrupts only works for the core you are in, hence why this is run in parrot\+\_\+main rather than parrot\+\_\+core1
+
+Pulling the XSMT (Soft Mute) pin of the PCM5102 DAC low mutes the output whilst this is happening \Hypertarget{parrot__main_8c_ae66f6b31b5ad750f1fe042a706a4e3d4}\index{parrot\_main.c@{parrot\_main.c}!main@{main}}
+\index{main@{main}!parrot\_main.c@{parrot\_main.c}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily \label{parrot__main_8c_ae66f6b31b5ad750f1fe042a706a4e3d4} 
+int main (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Main program entry point. 
+
+Initialise the PSRAM SPI interface, which uses pio0
+
+Start the Audio I2S interface, which uses pio1
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{parrot__main_8c_a5d8ff28893901c00f6792c86ecb5bd01}\index{parrot\_main.c@{parrot\_main.c}!divisors@{divisors}}
+\index{divisors@{divisors}!parrot\_main.c@{parrot\_main.c}}
+\doxysubsubsection{\texorpdfstring{divisors}{divisors}}
+{\footnotesize\ttfamily \label{parrot__main_8c_a5d8ff28893901c00f6792c86ecb5bd01} 
+float divisors\mbox{[}$\,$\mbox{]} = \{1,2,3,4,5,6,8,12,1,0.\+5,0.\+33333,0.\+25,0.\+2,0.\+166666,0.\+125,0.\+083333\}}
+
+
+
+An array of multipliers, which are applied to the master internal or external clock frequency to set the delay time as a multiple of the clock period. 
+
+1/12 1/8 1/6 1/5 1/4 1/3 1/2 1\texorpdfstring{$\ast$}{*} 2\texorpdfstring{$\ast$}{*} 3\texorpdfstring{$\ast$}{*} 4\texorpdfstring{$\ast$}{*} 5\texorpdfstring{$\ast$}{*} 6\texorpdfstring{$\ast$}{*} 8\texorpdfstring{$\ast$}{*} 12\texorpdfstring{$\ast$}{*} 

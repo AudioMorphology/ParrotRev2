@@ -1,0 +1,274 @@
+\doxysection{F\+:/\+Dev/\+Parrot/parrot.h File Reference}
+\hypertarget{parrot_8h}{}\label{parrot_8h}\index{F:/Dev/Parrot/parrot.h@{F:/Dev/Parrot/parrot.h}}
+{\ttfamily \#include "{}psram\+\_\+spi.\+h"{}}\newline
+\doxysubsubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+union \mbox{\hyperlink{unionu_sample}{u\+Sample}}
+\begin{DoxyCompactList}\small\item\em union of a float and a 32-\/Bit integer \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{parrot_8h_aced620805d4932cfff9e1ee967ad013d}\label{parrot_8h_aced620805d4932cfff9e1ee967ad013d} 
+\#define {\bfseries ALARM\+\_\+\+NUM}~1
+\item 
+\Hypertarget{parrot_8h_aedb88e03a9d05e766158a1f0895e0f8a}\label{parrot_8h_aedb88e03a9d05e766158a1f0895e0f8a} 
+\#define {\bfseries ALARM\+\_\+\+IRQ}~TIMER\+\_\+\+IRQ\+\_\+1
+\item 
+\Hypertarget{parrot_8h_a7f93e2fe7d68da94913e3f9f81afc035}\label{parrot_8h_a7f93e2fe7d68da94913e3f9f81afc035} 
+\#define {\bfseries muls15x16}(a,  b)~((\mbox{\hyperlink{parrot_8h_a6bdff0bc03d24ec80e07d29f92a4d8a8}{s15x16}})(((( signed long long )(a))\texorpdfstring{$\ast$}{*}(( signed long long )(b)))$>$$>$16))
+\item 
+\Hypertarget{parrot_8h_ad43e278facd4cc3f324ff19339fe47db}\label{parrot_8h_ad43e278facd4cc3f324ff19339fe47db} 
+\#define {\bfseries float\+\_\+to\+\_\+s15x16}(a)~((\mbox{\hyperlink{parrot_8h_a6bdff0bc03d24ec80e07d29f92a4d8a8}{s15x16}})((a)\texorpdfstring{$\ast$}{*}65536.\+0))
+\item 
+\Hypertarget{parrot_8h_aae96c9cabca27369ceae58033213e44c}\label{parrot_8h_aae96c9cabca27369ceae58033213e44c} 
+\#define {\bfseries s15x16\+\_\+to\+\_\+float}(a)~((float)(a)/65536.\+0)
+\item 
+\Hypertarget{parrot_8h_a9f58b6797d59294b7b31fc193b4c11c6}\label{parrot_8h_a9f58b6797d59294b7b31fc193b4c11c6} 
+\#define {\bfseries s15x16\+\_\+to\+\_\+int}(a)~((int)((a)$>$$>$16))
+\item 
+\Hypertarget{parrot_8h_a05a47f4d60ed1752adc9e46e29b14bfa}\label{parrot_8h_a05a47f4d60ed1752adc9e46e29b14bfa} 
+\#define {\bfseries int\+\_\+to\+\_\+s15x16}(a)~((\mbox{\hyperlink{parrot_8h_a6bdff0bc03d24ec80e07d29f92a4d8a8}{s15x16}})((a)$<$$<$16))
+\item 
+\Hypertarget{parrot_8h_a24f7b9d8b3d730e6c82f27efe7b2950e}\label{parrot_8h_a24f7b9d8b3d730e6c82f27efe7b2950e} 
+\#define {\bfseries divs15x16}(a,  b)~((\mbox{\hyperlink{parrot_8h_a6bdff0bc03d24ec80e07d29f92a4d8a8}{s15x16}})((((signed long long)(a)$<$$<$16)/(b))))
+\item 
+\Hypertarget{parrot_8h_a3d67d21cc630eadc821d366812d5a7f0}\label{parrot_8h_a3d67d21cc630eadc821d366812d5a7f0} 
+\#define {\bfseries abss15x16}(a)~abs(a)
+\item 
+\Hypertarget{parrot_8h_a2daf35d7cbf61c210ff47f8f057a5c4d}\label{parrot_8h_a2daf35d7cbf61c210ff47f8f057a5c4d} 
+\#define {\bfseries muls1x14}(a,  b)~((s1x14)((((int)(a))\texorpdfstring{$\ast$}{*}((int)(b)))$>$$>$14))
+\item 
+\Hypertarget{parrot_8h_af082b372f19906dcce8973a17db2c6ca}\label{parrot_8h_af082b372f19906dcce8973a17db2c6ca} 
+\#define {\bfseries float\+\_\+to\+\_\+s1x14}(a)~((s1x14)((a)\texorpdfstring{$\ast$}{*}16384.\+0))
+\item 
+\Hypertarget{parrot_8h_abf2ebc86525c826a318a4ea4603d2071}\label{parrot_8h_abf2ebc86525c826a318a4ea4603d2071} 
+\#define {\bfseries s1x14\+\_\+to\+\_\+float}(a)~((float)(a)/16384.\+0)
+\item 
+\Hypertarget{parrot_8h_af1bbc28faa9dcdab52e6538469ecfcb9}\label{parrot_8h_af1bbc28faa9dcdab52e6538469ecfcb9} 
+\#define {\bfseries abss1x14}(a)~abs(a)
+\item 
+\Hypertarget{parrot_8h_a2652f32276a90ed6e3b86303b3ace6ea}\label{parrot_8h_a2652f32276a90ed6e3b86303b3ace6ea} 
+\#define {\bfseries divs1x14}(a,  b)~((s1x14)((((signed int)(a)$<$$<$14)/(b))))
+\item 
+\Hypertarget{parrot_8h_a7801a83de96d85f7f4d7dd3ad60183bd}\label{parrot_8h_a7801a83de96d85f7f4d7dd3ad60183bd} 
+\#define {\bfseries float\+\_\+to\+\_\+int}(x)~(((int) ((x \texorpdfstring{$\ast$}{*} 8388607) + 8388608.\+5f)) -\/ 8388608)
+\item 
+\Hypertarget{parrot_8h_a183bc17010bc9b3eb14f05b2b17f7096}\label{parrot_8h_a183bc17010bc9b3eb14f05b2b17f7096} 
+\#define {\bfseries float\+\_\+to\+\_\+int32}(x)~(((int) ((x \texorpdfstring{$\ast$}{*} 2147483647) + 2147483648.\+5f)) -\/ 2147483648)
+\item 
+\Hypertarget{parrot_8h_a2d90c7620cf1fbc49c316297c166edcb}\label{parrot_8h_a2d90c7620cf1fbc49c316297c166edcb} 
+\#define {\bfseries int\+\_\+to\+\_\+float}(x)~((((float) (x + 8388608)) -\/ 8388608.\+5f) / 8388607.f)
+\item 
+\Hypertarget{parrot_8h_ad1d2c6750d3244c320dfec3c84c14926}\label{parrot_8h_ad1d2c6750d3244c320dfec3c84c14926} 
+\#define {\bfseries int32\+\_\+to\+\_\+float}(x)~((((float) (x + 2147483648)) -\/ 2147483648.\+5f) / 2147483648.f)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef signed int \mbox{\hyperlink{parrot_8h_a6bdff0bc03d24ec80e07d29f92a4d8a8}{s15x16}}
+\begin{DoxyCompactList}\small\item\em Various fixed point conversion, multiplication and division macros. \end{DoxyCompactList}\item 
+\Hypertarget{parrot_8h_a3f448718a042309479cd355982a73893}\label{parrot_8h_a3f448718a042309479cd355982a73893} 
+typedef signed short {\bfseries s1x14}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{parrot_8h_a677531d0ec7a1f4b9b9d8ebb4b3d4521}\label{parrot_8h_a677531d0ec7a1f4b9b9d8ebb4b3d4521} 
+void {\bfseries core1\+\_\+entry} (void)
+\begin{DoxyCompactList}\small\item\em core1 entry point called from \doxylink{parrot__main_8c}{parrot\+\_\+main.\+c} \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{parrot_8h_a782715f72de752446e670ca8536fd4fd}{single\+\_\+delay}} (union \mbox{\hyperlink{unionu_sample}{u\+Sample}})
+\begin{DoxyCompactList}\small\item\em Single Delay. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{parrot_8h_a9a421dffc23588ba1399035b42a635b3}{single\+\_\+tap}} (union \mbox{\hyperlink{unionu_sample}{u\+Sample}}, float)
+\begin{DoxyCompactList}\small\item\em Single-\/tap delay. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{parrot_8h_a931af3f4a4ce6b4d652cba2025fd5556}{Ping\+\_\+\+Pong}} (union \mbox{\hyperlink{unionu_sample}{u\+Sample}}, float, bool)
+\begin{DoxyCompactList}\small\item\em Ping Pong delay. \end{DoxyCompactList}\item 
+\Hypertarget{parrot_8h_aec2284b0de923d0eda61a86fb6b4c648}\label{parrot_8h_aec2284b0de923d0eda61a86fb6b4c648} 
+int32\+\_\+t {\bfseries single\+\_\+tap\+\_\+shift} (int32\+\_\+t, uint32\+\_\+t, uint8\+\_\+t)
+\item 
+float \mbox{\hyperlink{parrot_8h_a7820a4fd83fffae49196ac19d501ecd6}{rational\+\_\+tanh}} (float)
+\begin{DoxyCompactList}\small\item\em rational tanh \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{parrot_8h_a1d4475a10532e87db4a30c3a082ddc90}{soft\+\_\+clip}} (float)
+\begin{DoxyCompactList}\small\item\em Soft Clip function. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{parrot_8h_a7d85354add3da5b36ae9b723319e470d}\label{parrot_8h_a7d85354add3da5b36ae9b723319e470d} 
+double {\bfseries Clock\+BPM}
+\item 
+\Hypertarget{parrot_8h_af392689b714f6ba2458634956905a640}\label{parrot_8h_af392689b714f6ba2458634956905a640} 
+double {\bfseries Clock\+Freq}
+\item 
+\Hypertarget{parrot_8h_abc80d622ccf90a4f002f559087b51477}\label{parrot_8h_abc80d622ccf90a4f002f559087b51477} 
+double {\bfseries Clock\+Period}
+\item 
+\Hypertarget{parrot_8h_ac555310904b58878c17cbe950aa087b0}\label{parrot_8h_ac555310904b58878c17cbe950aa087b0} 
+uint32\+\_\+t {\bfseries Read\+Pointer}
+\item 
+\Hypertarget{parrot_8h_a283b67b14f146dbdae08dcfb9b3259c1}\label{parrot_8h_a283b67b14f146dbdae08dcfb9b3259c1} 
+uint32\+\_\+t {\bfseries Write\+Pointer}
+\item 
+\Hypertarget{parrot_8h_a637ed802eeffccca74e9ea7e2ab729d5}\label{parrot_8h_a637ed802eeffccca74e9ea7e2ab729d5} 
+float {\bfseries glb\+Feedback}
+\item 
+\Hypertarget{parrot_8h_ade4c3293feef1039a1321536183b5ab8}\label{parrot_8h_ade4c3293feef1039a1321536183b5ab8} 
+float {\bfseries glb\+Divisor}
+\item 
+float \mbox{\hyperlink{parrot_8h_a5d8ff28893901c00f6792c86ecb5bd01}{divisors}} \mbox{[}$\,$\mbox{]}
+\begin{DoxyCompactList}\small\item\em An array of multipliers, which are applied to the master internal or external clock frequency to set the delay time as a multiple of the clock period. \end{DoxyCompactList}\item 
+\Hypertarget{parrot_8h_a9d43969205916404e43965cd65ed2e1a}\label{parrot_8h_a9d43969205916404e43965cd65ed2e1a} 
+int {\bfseries Algorithm}
+\item 
+\Hypertarget{parrot_8h_a409569c38131b65358f7c2f1904d7fd5}\label{parrot_8h_a409569c38131b65358f7c2f1904d7fd5} 
+\+\_\+\+Atomic int32\+\_\+t {\bfseries Ext\+Clock\+Period}
+\item 
+\Hypertarget{parrot_8h_a25c06bde7e13d38fcc6f6ade5119e1d7}\label{parrot_8h_a25c06bde7e13d38fcc6f6ade5119e1d7} 
+\+\_\+\+Atomic int32\+\_\+t {\bfseries Ext\+Clock\+Tick}
+\item 
+\Hypertarget{parrot_8h_a6aa2f30691bc3872d6a19a90dd200684}\label{parrot_8h_a6aa2f30691bc3872d6a19a90dd200684} 
+uint32\+\_\+t {\bfseries glb\+Delay}
+\item 
+\Hypertarget{parrot_8h_ae298eaa20a8e2c4a190d13f16dc9ae05}\label{parrot_8h_ae298eaa20a8e2c4a190d13f16dc9ae05} 
+uint32\+\_\+t {\bfseries target\+Delay}
+\item 
+\Hypertarget{parrot_8h_aea8be3b13319315ac2941535a39037b1}\label{parrot_8h_aea8be3b13319315ac2941535a39037b1} 
+int32\+\_\+t {\bfseries Previous\+Clock\+Period}
+\item 
+\Hypertarget{parrot_8h_a1b0ae65de18e8470519861ecaa5bc95c}\label{parrot_8h_a1b0ae65de18e8470519861ecaa5bc95c} 
+uint32\+\_\+t {\bfseries glb\+Increment}
+\item 
+\Hypertarget{parrot_8h_a27f48716330739d3ecace3f7cb0579f1}\label{parrot_8h_a27f48716330739d3ecace3f7cb0579f1} 
+int32\+\_\+t {\bfseries Delay\+Diff}
+\item 
+\Hypertarget{parrot_8h_a8a8ebb7dcab8c051ca45b0da0186a5cf}\label{parrot_8h_a8a8ebb7dcab8c051ca45b0da0186a5cf} 
+float {\bfseries glb\+Wet}
+\item 
+\Hypertarget{parrot_8h_ad7a585b9ac22f4e71dd43c8caa15e6e0}\label{parrot_8h_ad7a585b9ac22f4e71dd43c8caa15e6e0} 
+float {\bfseries glb\+Dry}
+\item 
+\Hypertarget{parrot_8h_adb1c2b4c2370045d29f5678c2b73aada}\label{parrot_8h_adb1c2b4c2370045d29f5678c2b73aada} 
+int {\bfseries spinlock\+\_\+num\+\_\+glb\+Delay}
+\item 
+\Hypertarget{parrot_8h_a4be5364d8c7aaa805ad6124a822f0fe7}\label{parrot_8h_a4be5364d8c7aaa805ad6124a822f0fe7} 
+spin\+\_\+lock\+\_\+t \texorpdfstring{$\ast$}{*} {\bfseries spinlock\+\_\+glb\+Delay}
+\item 
+\Hypertarget{parrot_8h_a15a299b0c1a22a31c7bb56e2e838302a}\label{parrot_8h_a15a299b0c1a22a31c7bb56e2e838302a} 
+int {\bfseries Clock\+Phase}
+\item 
+\Hypertarget{parrot_8h_a37c4ddc42fbe37f0df788373e2300d83}\label{parrot_8h_a37c4ddc42fbe37f0df788373e2300d83} 
+int {\bfseries LEDPhase}
+\item 
+\Hypertarget{parrot_8h_a761a47ee75962d758ab831639f19cc26}\label{parrot_8h_a761a47ee75962d758ab831639f19cc26} 
+float {\bfseries Feedback\+Percent}
+\item 
+\Hypertarget{parrot_8h_a93bb8fa320fe4e166005fc4f0c0b2705}\label{parrot_8h_a93bb8fa320fe4e166005fc4f0c0b2705} 
+psram\+\_\+spi\+\_\+inst\+\_\+t {\bfseries psram\+\_\+spi}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Header file -\/ constant definitions, function prototypes etc 
+
+\doxysubsection{Typedef Documentation}
+\Hypertarget{parrot_8h_a6bdff0bc03d24ec80e07d29f92a4d8a8}\index{parrot.h@{parrot.h}!s15x16@{s15x16}}
+\index{s15x16@{s15x16}!parrot.h@{parrot.h}}
+\doxysubsubsection{\texorpdfstring{s15x16}{s15x16}}
+{\footnotesize\ttfamily \label{parrot_8h_a6bdff0bc03d24ec80e07d29f92a4d8a8} 
+typedef signed int \mbox{\hyperlink{parrot_8h_a6bdff0bc03d24ec80e07d29f92a4d8a8}{s15x16}}}
+
+
+
+Various fixed point conversion, multiplication and division macros. 
+
+These came from here\+: \href{https://people.ece.cornell.edu/land/courses/ece4760/RP2040/C_SDK_fixed_pt/speed_test/Fixed_point_test.c}{\texttt{ https\+://people.\+ece.\+cornell.\+edu/land/courses/ece4760/\+RP2040/\+C\+\_\+\+SDK\+\_\+fixed\+\_\+pt/speed\+\_\+test/\+Fixed\+\_\+point\+\_\+test.\+c}} 
+
+\doxysubsection{Function Documentation}
+\Hypertarget{parrot_8h_a931af3f4a4ce6b4d652cba2025fd5556}\index{parrot.h@{parrot.h}!Ping\_Pong@{Ping\_Pong}}
+\index{Ping\_Pong@{Ping\_Pong}!parrot.h@{parrot.h}}
+\doxysubsubsection{\texorpdfstring{Ping\_Pong()}{Ping\_Pong()}}
+{\footnotesize\ttfamily \label{parrot_8h_a931af3f4a4ce6b4d652cba2025fd5556} 
+float Ping\+\_\+\+Pong (\begin{DoxyParamCaption}\item[{union \mbox{\hyperlink{unionu_sample}{u\+Sample}}}]{In\+Sample}{, }\item[{float}]{gain}{, }\item[{bool}]{Left\+Right}{}\end{DoxyParamCaption})}
+
+
+
+Ping Pong delay. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em In\+Sample} & current input sample \\
+\hline
+{\em gain} & feedback gain \\
+\hline
+{\em Left\+Right} & whether this is the Left or Right channel \\
+\hline
+\end{DoxyParams}
+\Hypertarget{parrot_8h_a7820a4fd83fffae49196ac19d501ecd6}\index{parrot.h@{parrot.h}!rational\_tanh@{rational\_tanh}}
+\index{rational\_tanh@{rational\_tanh}!parrot.h@{parrot.h}}
+\doxysubsubsection{\texorpdfstring{rational\_tanh()}{rational\_tanh()}}
+{\footnotesize\ttfamily \label{parrot_8h_a7820a4fd83fffae49196ac19d501ecd6} 
+float rational\+\_\+tanh (\begin{DoxyParamCaption}\item[{float}]{x}{}\end{DoxyParamCaption})}
+
+
+
+rational tanh 
+
+This is a rational function to approximate a tanh-\/like soft clipper. It is based on the pade-\/approximation of the tanh function with tweaked coefficients. The function is in the range x=-\/3..3 and outputs the range y=-\/1..1. Beyond this range the output must be clamped to -\/1..1. The first two derivatives of the function vanish at -\/3 and 3, so the transition to the hard clipped region is C2-\/continuous. \Hypertarget{parrot_8h_a782715f72de752446e670ca8536fd4fd}\index{parrot.h@{parrot.h}!single\_delay@{single\_delay}}
+\index{single\_delay@{single\_delay}!parrot.h@{parrot.h}}
+\doxysubsubsection{\texorpdfstring{single\_delay()}{single\_delay()}}
+{\footnotesize\ttfamily \label{parrot_8h_a782715f72de752446e670ca8536fd4fd} 
+float single\+\_\+delay (\begin{DoxyParamCaption}\item[{union \mbox{\hyperlink{unionu_sample}{u\+Sample}}}]{In\+Sample}{}\end{DoxyParamCaption})}
+
+
+
+Single Delay. 
+
+Just writes the Input Sample to the current write point, and returns the delayed sample pointed to by the Read Pointer
+
+
+\begin{DoxyParams}{Parameters}
+{\em In\+Sample} & Input Sample from Audio buffer \\
+\hline
+\end{DoxyParams}
+\Hypertarget{parrot_8h_a9a421dffc23588ba1399035b42a635b3}\index{parrot.h@{parrot.h}!single\_tap@{single\_tap}}
+\index{single\_tap@{single\_tap}!parrot.h@{parrot.h}}
+\doxysubsubsection{\texorpdfstring{single\_tap()}{single\_tap()}}
+{\footnotesize\ttfamily \label{parrot_8h_a9a421dffc23588ba1399035b42a635b3} 
+float single\+\_\+tap (\begin{DoxyParamCaption}\item[{union \mbox{\hyperlink{unionu_sample}{u\+Sample}}}]{In\+Sample}{, }\item[{float}]{gain}{}\end{DoxyParamCaption})}
+
+
+
+Single-\/tap delay. 
+
+Single-\/tap delay -\/ writes a mix of the delayed signal with the current input sample, and writes it to the current write position in the buffer.
+
+
+\begin{DoxyParams}{Parameters}
+{\em In\+Sample} & Current Sample from the Audio Input buffer \\
+\hline
+{\em gain} & feedback gain \\
+\hline
+\end{DoxyParams}
+\Hypertarget{parrot_8h_a1d4475a10532e87db4a30c3a082ddc90}\index{parrot.h@{parrot.h}!soft\_clip@{soft\_clip}}
+\index{soft\_clip@{soft\_clip}!parrot.h@{parrot.h}}
+\doxysubsubsection{\texorpdfstring{soft\_clip()}{soft\_clip()}}
+{\footnotesize\ttfamily \label{parrot_8h_a1d4475a10532e87db4a30c3a082ddc90} 
+float soft\+\_\+clip (\begin{DoxyParamCaption}\item[{float}]{x}{}\end{DoxyParamCaption})}
+
+
+
+Soft Clip function. 
+
+implements a 1.\+5x -\/ 0.\+5x\texorpdfstring{$^\wedge$}{\string^}3 waveshaper 
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{parrot_8h_a5d8ff28893901c00f6792c86ecb5bd01}\index{parrot.h@{parrot.h}!divisors@{divisors}}
+\index{divisors@{divisors}!parrot.h@{parrot.h}}
+\doxysubsubsection{\texorpdfstring{divisors}{divisors}}
+{\footnotesize\ttfamily \label{parrot_8h_a5d8ff28893901c00f6792c86ecb5bd01} 
+float divisors\mbox{[}$\,$\mbox{]}\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+An array of multipliers, which are applied to the master internal or external clock frequency to set the delay time as a multiple of the clock period. 
+
+1/12 1/8 1/6 1/5 1/4 1/3 1/2 1\texorpdfstring{$\ast$}{*} 2\texorpdfstring{$\ast$}{*} 3\texorpdfstring{$\ast$}{*} 4\texorpdfstring{$\ast$}{*} 5\texorpdfstring{$\ast$}{*} 6\texorpdfstring{$\ast$}{*} 8\texorpdfstring{$\ast$}{*} 12\texorpdfstring{$\ast$}{*} 

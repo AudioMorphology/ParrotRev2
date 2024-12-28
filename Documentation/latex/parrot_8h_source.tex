@@ -1,0 +1,162 @@
+\doxysection{parrot.\+h}
+\hypertarget{parrot_8h_source}{}\label{parrot_8h_source}\index{F:/Dev/Parrot/parrot.h@{F:/Dev/Parrot/parrot.h}}
+\mbox{\hyperlink{parrot_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/******************************************************************************}}
+\DoxyCodeLine{00002\ \textcolor{comment}{}}
+\DoxyCodeLine{00003\ \textcolor{comment}{parrot}}
+\DoxyCodeLine{00004\ \textcolor{comment}{}}
+\DoxyCodeLine{00005\ \textcolor{comment}{Copyright\ ©\ 2024\ Richard\ R.\ Goodwin\ /\ Audio\ Morphology\ Ltd.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{}}
+\DoxyCodeLine{00007\ \textcolor{comment}{Permission\ is\ hereby\ granted,\ free\ of\ charge,\ to\ any\ person\ obtaining\ a\ copy\ of}}
+\DoxyCodeLine{00008\ \textcolor{comment}{this\ software\ and\ associated\ documentation\ files\ (the\ “Software”),\ to\ deal\ in}}
+\DoxyCodeLine{00009\ \textcolor{comment}{the\ Software\ without\ restriction,\ including\ without\ limitation\ the\ rights\ to}}
+\DoxyCodeLine{00010\ \textcolor{comment}{use,\ copy,\ modify,\ merge,\ publish,\ distribute,\ sublicense,\ and/or\ sell\ copies}}
+\DoxyCodeLine{00011\ \textcolor{comment}{of\ the\ Software,\ and\ to\ permit\ persons\ to\ whom\ the\ Software\ is\ furnished\ to\ do}}
+\DoxyCodeLine{00012\ \textcolor{comment}{so,\ subject\ to\ the\ following\ conditions:}}
+\DoxyCodeLine{00013\ \textcolor{comment}{}}
+\DoxyCodeLine{00014\ \textcolor{comment}{The\ above\ copyright\ notice\ and\ this\ permission\ notice\ shall\ be\ included\ in\ all}}
+\DoxyCodeLine{00015\ \textcolor{comment}{copies\ or\ substantial\ portions\ of\ the\ Software.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{THE\ SOFTWARE\ IS\ PROVIDED\ “AS\ IS”,\ WITHOUT\ WARRANTY\ OF\ ANY\ KIND,\ EXPRESS\ OR}}
+\DoxyCodeLine{00018\ \textcolor{comment}{IMPLIED,\ INCLUDING\ BUT\ NOT\ LIMITED\ TO\ THE\ WARRANTIES\ OF\ MERCHANTABILITY,}}
+\DoxyCodeLine{00019\ \textcolor{comment}{FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE\ AND\ NONINFRINGEMENT.\ IN\ NO\ EVENT\ SHALL\ THE}}
+\DoxyCodeLine{00020\ \textcolor{comment}{AUTHORS\ OR\ COPYRIGHT\ HOLDERS\ BE\ LIABLE\ FOR\ ANY\ CLAIM,\ DAMAGES\ OR\ OTHER}}
+\DoxyCodeLine{00021\ \textcolor{comment}{LIABILITY,\ WHETHER\ IN\ AN\ ACTION\ OF\ CONTRACT,\ TORT\ OR\ OTHERWISE,\ ARISING\ FROM,}}
+\DoxyCodeLine{00022\ \textcolor{comment}{OUT\ OF\ OR\ IN\ CONNECTION\ WITH\ THE\ SOFTWARE\ OR\ THE\ USE\ OR\ OTHER\ DEALINGS\ IN\ THE}}
+\DoxyCodeLine{00023\ \textcolor{comment}{SOFTWARE.}}
+\DoxyCodeLine{00024\ \textcolor{comment}{}}
+\DoxyCodeLine{00025\ \textcolor{comment}{******************************************************************************/}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#ifndef\ PARROT\_H}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#define\ PARROT\_H}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ "{}psram\_spi.h"{}}}
+\DoxyCodeLine{00034\ \textcolor{comment}{//\ To\ Do\ -\/\ is\ it\ OK\ to\ hard\ code\ these,\ or\ should\ they\ be\ }}
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ dynamically\ assigned\ from\ an\ alarm\ \&\ IRQ\ pool?}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#define\ ALARM\_NUM\ 1}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#define\ ALARM\_IRQ\ TIMER\_IRQ\_1}}
+\DoxyCodeLine{00044\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{parrot_8h_a6bdff0bc03d24ec80e07d29f92a4d8a8}{s15x16}};}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#define\ muls15x16(a,b)\ ((s15x16)((((\ signed\ long\ long\ )(a))*((\ signed\ long\ long\ )(b)))>>16))\ }\textcolor{comment}{//multiply\ two\ fixed\ 16:16}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#define\ float\_to\_s15x16(a)\ ((s15x16)((a)*65536.0))\ }\textcolor{comment}{//\ 2\string^16}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#define\ s15x16\_to\_float(a)\ ((float)(a)/65536.0)}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#define\ s15x16\_to\_int(a)\ \ \ \ ((int)((a)>>16))}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#define\ int\_to\_s15x16(a)\ \ \ \ ((s15x16)((a)<<16))}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#define\ divs15x16(a,b)\ ((s15x16)((((signed\ long\ long)(a)<<16)/(b))))\ }}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#define\ abss15x16(a)\ abs(a)}}
+\DoxyCodeLine{00052\ \textcolor{comment}{//\ and\ for\ 1.14}}
+\DoxyCodeLine{00053\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{short}\ s1x14\ ;}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#define\ muls1x14(a,b)\ ((s1x14)((((int)(a))*((int)(b)))>>14))\ }}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#define\ float\_to\_s1x14(a)\ ((s1x14)((a)*16384.0))\ }\textcolor{comment}{//\ 2\string^14}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#define\ s1x14\_to\_float(a)\ ((float)(a)/16384.0)}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#define\ abss1x14(a)\ abs(a)\ }}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\#define\ divs1x14(a,b)\ ((s1x14)((((signed\ int)(a)<<14)/(b))))\ }}
+\DoxyCodeLine{00059\ \textcolor{comment}{//\ Int\ to\ float}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\#define\ float\_to\_int(x)\ (((int)\ ((x\ *\ 8388607)\ +\ 8388608.5f))\ -\/\ 8388608)}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\#define\ float\_to\_int32(x)\ (((int)\ ((x\ *\ 2147483647)\ +\ 2147483648.5f))\ -\/\ 2147483648)}}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#define\ int\_to\_float(x)\ ((((float)\ (x\ +\ 8388608))\ -\/\ 8388608.5f)\ /\ 8388607.f)}}
+\DoxyCodeLine{00063\ \textcolor{preprocessor}{\#define\ int32\_to\_float(x)\ ((((float)\ (x\ +\ 2147483648))\ -\/\ 2147483648.5f)\ /\ 2147483648.f)}}
+\DoxyCodeLine{00072\ \textcolor{keyword}{union\ }\mbox{\hyperlink{unionu_sample}{uSample}}\ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{float}\ fSample;}
+\DoxyCodeLine{00074\ \ \ \ \ int32\_t\ iSample;}
+\DoxyCodeLine{00075\ \};}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{comment}{//\ Global\ Variables\ -\/\ Constants}}
+\DoxyCodeLine{00078\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ ClockScale\ =\ 0.04884;\ \ \ \ \ \ \ \textcolor{comment}{//\ (=\ (240-\/40)/4095)\ scales\ the\ internal\ clock\ BPM\ from\ 40\ to\ 240BPM}}
+\DoxyCodeLine{00079\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ Clock\_MA\_Len\ =\ 3;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Length\ of\ the\ Clock\ Pot\ Moving\ Average\ buffer}}
+\DoxyCodeLine{00080\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ WetDry\_MA\_Len\ =\ 5;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Length\ of\ the\ Wet/Dry\ pot\ MA\ buffer}}
+\DoxyCodeLine{00081\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ ExtClock\_MA\_Len\ =\ 10;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Length\ of\ the\ ExtClock\ Moving\ Average\ buffer\ (to\ filter\ out\ timing\ irregularities)}}
+\DoxyCodeLine{00082\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint32\_t\ ClockHysteresis\ =\ 0xFF;\ \ \ \textcolor{comment}{//\ +/-\/\ Amount\ the\ clock\ has\ to\ vary\ before\ we\ note\ a\ new\ clock\ period\ (to\ overcome\ jitter)}}
+\DoxyCodeLine{00083\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ Feedback\_scale\ =\ 0.0002442;\ \ \textcolor{comment}{//\ (=\ 1/4095\ )fixed\ scale\ factor\ to\ scale\ the\ Feedback\ ADC\ value\ to\ give\ a\ Percentage\ feedback\ from\ 0\ to\ 1}}
+\DoxyCodeLine{00084\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ WetDry\_Scale\ =\ 0.02442;\ \ \ \ \ \ \textcolor{comment}{//\ (=\ 100/4095)fixed\ scale\ factor\ to\ scale\ the\ Divisor\ ADC\ value\ to\ give\ a\ value\ from\ 0\ to\ 100}}
+\DoxyCodeLine{00085\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ SampleLength\ =\ 1000000.0f/96000.0f;\ \textcolor{comment}{//\ Length\ of\ 1\ stereo\ sample\ in\ uS\ (10.4166ms).\ \ }}
+\DoxyCodeLine{00086\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ Feedback\_MA\_Len\ =\ 3;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Length\ of\ the\ Feedback\ Moving\ Average\ ring\ buffer}}
+\DoxyCodeLine{00087\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ Tick\_MA\_Len\ =\ 1;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Length\ of\ the\ Rotary\ Encoder\ tick\ speed\ Moving\ Average\ ring\ buffer}}
+\DoxyCodeLine{00088\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint32\_t\ BUF\_LEN\ =\ 0x7FFFFC;\ \ \ \ \ \ \ \textcolor{comment}{//\ Actual\ Audio\ Buffer\ length\ in\ Mb\ =\ 8Mb.\ }}
+\DoxyCodeLine{00089\ \textcolor{comment}{//\ GPIO\ Pin\ definitions}}
+\DoxyCodeLine{00090\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ ALGORITHM\_0\ =\ 0;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ LSB\ of\ Algorithm\ 4-\/Way\ BCD\ Switch\ Physical\ Pin\ 1}}
+\DoxyCodeLine{00091\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ ALGORITHM\_1\ =\ 1;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ MSB\ of\ Algorithm\ 4-\/Way\ BCD\ Switch\ Physical\ Pin\ 2}}
+\DoxyCodeLine{00092\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ DIVISOR\_A\ =\ 2;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ 16-\/Way\ BCD\ switch-\/A\ \ \ \ Physical\ Pin\ 4}}
+\DoxyCodeLine{00093\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ DIVISOR\_B\ =\ 3;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ 16-\/Way\ BCD\ switch-\/B\ \ \ \ Physical\ Pin\ 5}}
+\DoxyCodeLine{00094\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ DIVISOR\_C\ =\ 4;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ 16-\/Way\ BCD\ switch-\/C\ \ \ \ Physical\ Pin\ 6}}
+\DoxyCodeLine{00095\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ DIVISOR\_D\ =\ 5;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ 16-\/Way\ BCD\ switch-\/D\ \ \ \ Physical\ Pin\ 7}}
+\DoxyCodeLine{00096\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ I2S\_DOUT\ =\ 6;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ I2S\ Data\ Out}}
+\DoxyCodeLine{00097\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ I2S\_DIN\ =\ 7;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ I2S\ Data\ In}}
+\DoxyCodeLine{00098\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ I2S\_BCK\ =\ 8;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ I2S\ Bit\ Clock}}
+\DoxyCodeLine{00099\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ I2S\_LRCK\ =\ 9;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ I2S\ Left-\/Right\ Clock}}
+\DoxyCodeLine{00100\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ I2S\_SCK\ =\ 10;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ I2S\ System\ Clock}}
+\DoxyCodeLine{00101\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ LED\_PIN\ =\ 11;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ LED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ physical\ pin\ 15}}
+\DoxyCodeLine{00102\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ XSMT\_PIN\ =\ 12;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ PCM5102\ Soft-\/mute\ \ \ \ \ Physical\ Pin\ 16\ }}
+\DoxyCodeLine{00103\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ ENCODER\_SW\ =\ 13;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Rotary\ Encoder\ switch\ Physical\ pin\ 17}}
+\DoxyCodeLine{00104\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ ENCODERA\_IN\ =\ 14;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Rotary\ encoder\ A-\/leg\ \ physical\ pin\ 20\ }}
+\DoxyCodeLine{00105\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ ENCODERB\_IN\ =\ 15;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Rotary\ encoder\ B-\/leg\ \ physical\ pin\ 21}}
+\DoxyCodeLine{00106\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ SPI\_CS\ =\ 16;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ SPI\ Chip\ Select}}
+\DoxyCodeLine{00107\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ SPI\_SCK\ =\ 17;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ SPI\ Serial\ Clock}}
+\DoxyCodeLine{00108\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ SPI\_MOSI\ =\ 19;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ SPI\ Master\ Out\ Slave\ In}}
+\DoxyCodeLine{00109\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ SPI\_MISO\ =\ 20;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ SPI\ Master\ In\ Slave\ Out}}
+\DoxyCodeLine{00110\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ SYNC\_PIN\ =\ 20;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Delay\ sync'd\ to\ clock\ physical\ pin\ 26}}
+\DoxyCodeLine{00111\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ CLOCK\_OUT\ =\ 21;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Internal\ clock\ out\ \ \ \ physical\ pin\ 27}}
+\DoxyCodeLine{00112\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ CLOCK\_IN\ =\ 22;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ External\ clock\ in\ \ \ \ \ physical\ pin\ 29}}
+\DoxyCodeLine{00113\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ POWERSAVE\_PIN\ =\ 23;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Set\ high\ turns\ on\ PWM\ mode\ the\ internal\ 3v3\ regulator,\ which\ reduces\ noise\ }}
+\DoxyCodeLine{00114\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ VBUS\_SENSE\ =\ 24;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ High\ if\ VBUS\ is\ present,\ low\ otherwise}}
+\DoxyCodeLine{00115\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ ONBOARD\_LED\ =\ 25;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ On-\/Board\ LED}}
+\DoxyCodeLine{00116\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ FEEDBACK\_PIN\ =\ 26;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ feedback\ amount\ \ \ \ \ \ \ physical\ pin\ 31\ (ADC0\ Input)}}
+\DoxyCodeLine{00117\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ CLOCKSPEED\_PIN\ =\ 27;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Clock\ Speed\ \ \ \ \ \ \ \ \ \ \ physical\ pin\ 32\ (ADC1\ Input)}}
+\DoxyCodeLine{00118\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ WETDRY\_PIN\ =\ 28;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Wet/Dry\ control\ \ \ \ \ \ \ physical\ pin\ 34\ (ADC2\ Input)}}
+\DoxyCodeLine{00119\ \textcolor{comment}{//\ ADC\ Channels}}
+\DoxyCodeLine{00120\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ ADC\_feedback\ =\ 0;}
+\DoxyCodeLine{00121\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ ADC\_Clock\ =\ 1;}
+\DoxyCodeLine{00122\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint\ ADC\_WetDry\ =\ 2;\ }
+\DoxyCodeLine{00123\ \textcolor{comment}{//\ AP\ 6404L\ Constants}}
+\DoxyCodeLine{00124\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint8\_t\ AP6404\_READ\ =\ 0x03;\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Read}}
+\DoxyCodeLine{00125\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint8\_t\ AP6404\_FREAD\ =\ 0x0B;\ \ \ \ \ \ \ \textcolor{comment}{//\ Fast\ Read}}
+\DoxyCodeLine{00126\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint8\_t\ AP6404\_WRITE\ =\ 0x02;\ \ \ \ \ \ \ \textcolor{comment}{//\ Write}}
+\DoxyCodeLine{00127\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint8\_t\ AP6404\_RST\_EN\ =\ 0x66;\ \ \ \ \ \ \textcolor{comment}{//\ Reset\ Enable}}
+\DoxyCodeLine{00128\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint8\_t\ AP6404\_RESET\ =\ 0x99;\ \ \ \ \ \ \ \textcolor{comment}{//\ Reset}}
+\DoxyCodeLine{00129\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint8\_t\ AP6404\_WBT\ =\ 0xC0;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Wrap\ Boundary\ Toggle\ \ }}
+\DoxyCodeLine{00130\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint8\_t\ AP6404\_READID\ =\ 0x9F;\ \ \ \ \ \ \textcolor{comment}{//\ Read\ ID}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \textcolor{comment}{//\ Global\ Variables\ defined\ in\ parrot\_main.c}}
+\DoxyCodeLine{00133\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{double}\ ClockBPM;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ BPM\ Value\ for\ interal\ clock}}
+\DoxyCodeLine{00134\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{double}\ ClockFreq;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Internal\ Clock\ Frequency}}
+\DoxyCodeLine{00135\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{double}\ ClockPeriod;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Internal\ Clock\ Period}}
+\DoxyCodeLine{00136\ \textcolor{keyword}{extern}\ uint32\_t\ ReadPointer;\ }
+\DoxyCodeLine{00137\ \textcolor{keyword}{extern}\ uint32\_t\ WritePointer;}
+\DoxyCodeLine{00138\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{float}\ glbFeedback;}
+\DoxyCodeLine{00139\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{float}\ glbDivisor;}
+\DoxyCodeLine{00140\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{parrot_8h_a5d8ff28893901c00f6792c86ecb5bd01}{divisors}}[];}
+\DoxyCodeLine{00141\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ Algorithm;}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \textcolor{comment}{//\ \ Global\ variables\ defined\ in\ parrot\_core1.c}}
+\DoxyCodeLine{00144\ \textcolor{keyword}{extern}\ \_Atomic\ int32\_t\ ExtClockPeriod;\ \ \ \ \ \textcolor{comment}{//\ External\ Clock\ Period\ (rising\ edge\ to\ rising\ edge)}}
+\DoxyCodeLine{00145\ \textcolor{keyword}{extern}\ \_Atomic\ int32\_t\ ExtClockTick;\ \ \ \ \ \ \ \textcolor{comment}{//\ Records\ the\ last\ tick\ for\ the\ External\ Clock}}
+\DoxyCodeLine{00146\ \textcolor{keyword}{extern}\ uint32\_t\ glbDelay;}
+\DoxyCodeLine{00147\ \textcolor{keyword}{extern}\ uint32\_t\ targetDelay;}
+\DoxyCodeLine{00148\ \textcolor{keyword}{extern}\ int32\_t\ PreviousClockPeriod;}
+\DoxyCodeLine{00149\ \textcolor{keyword}{extern}\ uint32\_t\ glbIncrement;}
+\DoxyCodeLine{00150\ \textcolor{keyword}{extern}\ int32\_t\ DelayDiff;}
+\DoxyCodeLine{00151\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{float}\ glbWet;}
+\DoxyCodeLine{00152\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{float}\ glbDry;}
+\DoxyCodeLine{00153\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ spinlock\_num\_glbDelay;}
+\DoxyCodeLine{00154\ \textcolor{keyword}{extern}\ spin\_lock\_t\ *spinlock\_glbDelay;}
+\DoxyCodeLine{00155\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ ClockPhase;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Toggles\ between\ 0\ \&\ 1}}
+\DoxyCodeLine{00156\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{int}\ LEDPhase;}
+\DoxyCodeLine{00157\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{float}\ FeedbackPercent;}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{comment}{//\ function\ prototypes\ -\/\ parrot\_core1.c}}
+\DoxyCodeLine{00160\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{parrot_8h_a677531d0ec7a1f4b9b9d8ebb4b3d4521}{core1\_entry}}(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \textcolor{comment}{//\ function\ prototypes\ -\/\ parrot\_func.c}}
+\DoxyCodeLine{00163\ \textcolor{keyword}{extern}\ psram\_spi\_inst\_t\ psram\_spi;}
+\DoxyCodeLine{00164\ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{parrot_8h_a782715f72de752446e670ca8536fd4fd}{single\_delay}}(\textcolor{keyword}{union}\ \mbox{\hyperlink{unionu_sample}{uSample}});}
+\DoxyCodeLine{00165\ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{parrot_8h_a9a421dffc23588ba1399035b42a635b3}{single\_tap}}(\textcolor{keyword}{union}\ \mbox{\hyperlink{unionu_sample}{uSample}},\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00166\ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{parrot_8h_a931af3f4a4ce6b4d652cba2025fd5556}{Ping\_Pong}}(\textcolor{keyword}{union}\ \mbox{\hyperlink{unionu_sample}{uSample}},\ \textcolor{keywordtype}{float},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00167\ int32\_t\ single\_tap\_shift(int32\_t,\ uint32\_t,\ uint8\_t);}
+\DoxyCodeLine{00177\ \_\_force\_inline\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ WetDry(\textcolor{keywordtype}{float}\ DrySample,\ \textcolor{keywordtype}{float}\ WetSample)\{}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keywordflow}{return}\ (DrySample\ *\ glbDry)\ +\ (WetSample\ *\ glbWet);\ }
+\DoxyCodeLine{00179\ \}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{parrot_8h_a7820a4fd83fffae49196ac19d501ecd6}{rational\_tanh}}(\textcolor{keywordtype}{float});}
+\DoxyCodeLine{00182\ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{parrot_8h_a1d4475a10532e87db4a30c3a082ddc90}{soft\_clip}}(\textcolor{keywordtype}{float});}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

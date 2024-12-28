@@ -1,0 +1,92 @@
+
+(rules PCB pcb
+  (snap_angle 
+    fortyfive_degree
+  )
+  (autoroute_settings
+    (fanout off)
+    (autoroute on)
+    (postroute on)
+    (vias on)
+    (via_costs 50)
+    (plane_via_costs 5)
+    (start_ripup_costs 100)
+    (start_pass_no 220)
+    (layer_rule F.Cu
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 2.1)
+    )
+    (layer_rule B.Cu
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 1.9)
+    )
+  )
+  (rule
+    (width 200.0)
+    (clear 200.0)
+    (clear 100.0 (type smd_to_turn_gap))
+    (clear 50.0 (type smd_smd))
+  )
+  (padstack "Via[0-1]_600:300_um"
+    (shape
+      (circle F.Cu 600.0 0.0 0.0)
+    )
+    (shape
+      (circle B.Cu 600.0 0.0 0.0)
+    )
+    (attach off)
+  )
+  (via 
+    "Via[0-1]_600:300_um" "Via[0-1]_600:300_um" default
+  )
+  (via 
+    "Via[0-1]_600:300_um-kicad_default" "Via[0-1]_600:300_um" "kicad_default"
+  )
+  (via_rule
+    default "Via[0-1]_600:300_um"
+  )
+  (via_rule
+    "kicad_default" "Via[0-1]_600:300_um-kicad_default"
+  )
+  (class default
+    (clearance_class default)
+    (via_rule default)
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu B.Cu)
+    )
+  )
+  (class "kicad_default"
+    VCC GND VEE +3.3V "Net-(C6-Pad1)" "Net-(C7-Pad1)" RIN LIN
+    "Net-(C10-Pad2)" ROUT "Net-(C11-Pad2)" LOUT "Net-(U4A--)" "Net-(C12-Pad2)" "Net-(C13-Pad2)" "Net-(U4B--)"
+    +5V "Net-(D1-A)" "Net-(D2-K)" "Net-(D3-A)" "B_9" "B_10" "Net-(D4-A)" "Net-(D5-A)"
+    "Net-(D7-A)" "T_3" "T_1" "unconnected-(J3-NC-Pad2)" "unconnected-(J4-NC-Pad2)" "T_4" "unconnected-(J5-NC-Pad2)" "T_6"
+    "T_10" "unconnected-(J6-NC-Pad2)" "T_8" "T_7" "unconnected-(U1-SWCLK-Pad41)" "CLOCK_OUT_1" "LOUT_1" "RIN_1"
+    "LIN_1" "ROUT_1" "CLOCK_IN_1" "DIV_C" "ALG_B" "DIV_A" "ALG_A" "DIV_D"
+    "DIV_B" "SYNC_FREE" "B_7" "B_4" "B_3" "B_2" "B_5" "RVOL_1"
+    "LVOL_1" AGND WET{slash}DRY "RVOL_2" AREF FEEDBACK "CLOCK_SPEED" "LVOL_2"
+    "P_5" "P_3" "P_8" "P_2" "P_7" "P_1" "P_4" "P_6"
+    "P_9" "ENC_A" "ENC_B" "unconnected-(J15-Pin_10-Pad10)" "unconnected-(J15-Pin_9-Pad9)" "ENC_SW" LED "E_3"
+    "unconnected-(J16-Pin_9-Pad9)" "E_7" "E_1" "E_5" "unconnected-(J16-Pin_10-Pad10)" "Net-(Q1-S)" "Net-(Q1-G)" "CLOCK_IN"
+    "Net-(Q2-B)" "Net-(Q3-B)" "Net-(U3A--)" "Net-(U3B--)" "CLOCK_OUT" D0 D1 D2
+    D3 D4 D5 D6 D7 "unconnected-(SW1-Pad9)" "I2S_DOUT" "I2S_LRCK"
+    "I2S_DIN" XSMT "SPI_MOSI" "SPI_CLK" "I2S_BCK" "I2S_SCK" "SPI_MISO" "SPI_CS"
+    "unconnected-(U1-3V3_EN-Pad37)_0" "unconnected-(U1-RUN-Pad30)" "unconnected-(U5-A3v3-Pad5)" "unconnected-(U5-DEMP-Pad8)" "unconnected-(U5-FMT-Pad6)" "unconnected-(U5-FLT-Pad9)" "unconnected-(U6-SIO3-Pad7)" "unconnected-(U6-SIO2-Pad3)"
+    "unconnected-(U8-GS-Pad14)" "unconnected-(U8-Eout-Pad15)" "unconnected-(SW1-Pad8)" "unconnected-(SW1-Pad6)" "unconnected-(SW1-Pad2)" "unconnected-(SW1-Pad7)" "unconnected-(U1-GND-Pad42)" "unconnected-(U1-3V3_EN-Pad37)"
+    "unconnected-(U1-SWDIO-Pad43)" "unconnected-(U1-GND-Pad42)_0" "unconnected-(U1-SWDIO-Pad43)_0" "unconnected-(U1-SWCLK-Pad41)_0" "unconnected-(U1-RUN-Pad30)_0"
+    (clearance_class "kicad_default")
+    (via_rule kicad_default)
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu B.Cu)
+    )
+  )
+)

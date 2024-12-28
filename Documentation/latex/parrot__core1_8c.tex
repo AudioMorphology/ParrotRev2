@@ -1,0 +1,165 @@
+\doxysection{F\+:/\+Dev/\+Parrot/parrot\+\_\+core1.c File Reference}
+\hypertarget{parrot__core1_8c}{}\label{parrot__core1_8c}\index{F:/Dev/Parrot/parrot\_core1.c@{F:/Dev/Parrot/parrot\_core1.c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$math.\+h$>$}\newline
+{\ttfamily \#include "{}parrot.\+h"{}}\newline
+{\ttfamily \#include "{}pico/stdlib.\+h"{}}\newline
+{\ttfamily \#include "{}pico/multicore.\+h"{}}\newline
+{\ttfamily \#include "{}hardware/irq.\+h"{}}\newline
+{\ttfamily \#include "{}hardware/adc.\+h"{}}\newline
+{\ttfamily \#include "{}hardware/sync.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int8\+\_\+t \mbox{\hyperlink{parrot__core1_8c_afe21adbf567c42a41a4709480efb2125}{check\+Rotary\+Encoder}} ()
+\begin{DoxyCompactList}\small\item\em Rotary Encoder finite state machine. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{parrot__core1_8c_a66e3dbe6039c9461b397296f63ff685a}{encoder\+\_\+\+IRQ\+\_\+handler}} (uint gpio, uint32\+\_\+t events)
+\begin{DoxyCompactList}\small\item\em Rotary Encoder IRQ callback. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{parrot__core1_8c_a1e9b9a3be6c4b6075d04de40a2e21978}{clock\+\_\+callback}} (uint gpio, uint32\+\_\+t events)
+\begin{DoxyCompactList}\small\item\em event handler for the incoming clock IRQ this is normalled from the internal clock via the external clock input jack. \end{DoxyCompactList}\item 
+\Hypertarget{parrot__core1_8c_a54e230a526ff7bad3762a9c5b6683b4a}\label{parrot__core1_8c_a54e230a526ff7bad3762a9c5b6683b4a} 
+void {\bfseries update\+Feedback} ()
+\begin{DoxyCompactList}\small\item\em check the Feedback Pot ADC input and update the global Feedback amount parameters. This updates a moving average figure to try and eliminate or at least reduce the noise on the ADC input \end{DoxyCompactList}\item 
+\Hypertarget{parrot__core1_8c_aface0710712eeff3c3721b361e2db58f}\label{parrot__core1_8c_aface0710712eeff3c3721b361e2db58f} 
+void {\bfseries update\+Clock} ()
+\begin{DoxyCompactList}\small\item\em Checks the Clock Pot ADC input and updates the global Internal Clock Speed. This updates a moving average figure to try and eliminate or at least reduce the noise on the ADC input. \end{DoxyCompactList}\item 
+\Hypertarget{parrot__core1_8c_a528ed956aa0bf0eb015345d61b65b0f7}\label{parrot__core1_8c_a528ed956aa0bf0eb015345d61b65b0f7} 
+void {\bfseries update\+Wet\+Dry} ()
+\begin{DoxyCompactList}\small\item\em check the value of the wet/dry pot and update the global Wet and Dry values. Raw values are run through a moving average buffer in order to reduce noise \end{DoxyCompactList}\item 
+\Hypertarget{parrot__core1_8c_a338c99b4dbf199068448188044386c98}\label{parrot__core1_8c_a338c99b4dbf199068448188044386c98} 
+void {\bfseries update\+Algorithm} ()
+\begin{DoxyCompactList}\small\item\em Check the state of the Algorithm pins -\/ two pins generate a 2-\/bit value, which is used to switch between the 4 different delay / reverb algorithms. \end{DoxyCompactList}\item 
+\Hypertarget{parrot__core1_8c_a091d72b469ffc1b89417b1b028f1817d}\label{parrot__core1_8c_a091d72b469ffc1b89417b1b028f1817d} 
+void {\bfseries update\+Divisor} ()
+\begin{DoxyCompactList}\small\item\em read the 4-\/Bit BCD value from the Divisor switch, read the appropriate Divisor (multiple of the clock period) and set the global divisor value accordingly \end{DoxyCompactList}\item 
+\Hypertarget{parrot__core1_8c_a9f153132b8b4afad133b952111e18bd9}\label{parrot__core1_8c_a9f153132b8b4afad133b952111e18bd9} 
+void {\bfseries core1\+\_\+entry} ()
+\begin{DoxyCompactList}\small\item\em core1 entry point called from \doxylink{parrot__main_8c}{parrot\+\_\+main.\+c} \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{parrot__core1_8c_a2995461f3105afc9f13934cd5c0734b2}\label{parrot__core1_8c_a2995461f3105afc9f13934cd5c0734b2} 
+bool {\bfseries temp} = false
+\item 
+\Hypertarget{parrot__core1_8c_a7d85354add3da5b36ae9b723319e470d}\label{parrot__core1_8c_a7d85354add3da5b36ae9b723319e470d} 
+double {\bfseries Clock\+BPM}
+\item 
+\Hypertarget{parrot__core1_8c_af392689b714f6ba2458634956905a640}\label{parrot__core1_8c_af392689b714f6ba2458634956905a640} 
+double {\bfseries Clock\+Freq}
+\item 
+\Hypertarget{parrot__core1_8c_abc80d622ccf90a4f002f559087b51477}\label{parrot__core1_8c_abc80d622ccf90a4f002f559087b51477} 
+double {\bfseries Clock\+Period}
+\item 
+\Hypertarget{parrot__core1_8c_a15a299b0c1a22a31c7bb56e2e838302a}\label{parrot__core1_8c_a15a299b0c1a22a31c7bb56e2e838302a} 
+int {\bfseries Clock\+Phase}
+\item 
+\Hypertarget{parrot__core1_8c_a37c4ddc42fbe37f0df788373e2300d83}\label{parrot__core1_8c_a37c4ddc42fbe37f0df788373e2300d83} 
+int {\bfseries LEDPhase}
+\item 
+\Hypertarget{parrot__core1_8c_a409569c38131b65358f7c2f1904d7fd5}\label{parrot__core1_8c_a409569c38131b65358f7c2f1904d7fd5} 
+\+\_\+\+Atomic int32\+\_\+t {\bfseries Ext\+Clock\+Period}
+\item 
+\Hypertarget{parrot__core1_8c_a25c06bde7e13d38fcc6f6ade5119e1d7}\label{parrot__core1_8c_a25c06bde7e13d38fcc6f6ade5119e1d7} 
+\+\_\+\+Atomic int32\+\_\+t {\bfseries Ext\+Clock\+Tick}
+\item 
+\Hypertarget{parrot__core1_8c_aff5f28ce7b6ef6ee218406651aef3982}\label{parrot__core1_8c_aff5f28ce7b6ef6ee218406651aef3982} 
+uint {\bfseries Sync\+Free}
+\item 
+\Hypertarget{parrot__core1_8c_abf219ac4e7b65a1c13392b550d50b292}\label{parrot__core1_8c_abf219ac4e7b65a1c13392b550d50b292} 
+uint16\+\_\+t {\bfseries Feedback\+\_\+\+MA} \mbox{[}16\mbox{]}
+\item 
+\Hypertarget{parrot__core1_8c_acc1457edccd8a0ef774539a9197af1ca}\label{parrot__core1_8c_acc1457edccd8a0ef774539a9197af1ca} 
+uint {\bfseries Feedback\+\_\+\+MA\+\_\+\+Ptr}
+\item 
+\Hypertarget{parrot__core1_8c_a219dd3f426e590eb37bf82d867e5a1ca}\label{parrot__core1_8c_a219dd3f426e590eb37bf82d867e5a1ca} 
+uint16\+\_\+t {\bfseries Feedback\+\_\+\+Average}
+\item 
+\Hypertarget{parrot__core1_8c_ad179f0b4748815cc6dbdb343939b6538}\label{parrot__core1_8c_ad179f0b4748815cc6dbdb343939b6538} 
+long {\bfseries Feedback\+\_\+\+MA\+\_\+\+Sum}
+\item 
+\Hypertarget{parrot__core1_8c_a5b15135a7179556546e3f9d75a66bab5}\label{parrot__core1_8c_a5b15135a7179556546e3f9d75a66bab5} 
+uint16\+\_\+t {\bfseries Clock\+\_\+\+MA} \mbox{[}16\mbox{]}
+\item 
+\Hypertarget{parrot__core1_8c_aa37d5e4c98e7790f72e86b2364fedec0}\label{parrot__core1_8c_aa37d5e4c98e7790f72e86b2364fedec0} 
+uint {\bfseries Clock\+\_\+\+MA\+\_\+\+Ptr}
+\item 
+\Hypertarget{parrot__core1_8c_a06f932f0a9ca0bd6d74ede39568d563f}\label{parrot__core1_8c_a06f932f0a9ca0bd6d74ede39568d563f} 
+uint16\+\_\+t {\bfseries Clock\+\_\+\+Average}
+\item 
+\Hypertarget{parrot__core1_8c_a3a824a68bf2a03007d1e6b37c86c0adb}\label{parrot__core1_8c_a3a824a68bf2a03007d1e6b37c86c0adb} 
+long {\bfseries Clock\+\_\+\+MA\+\_\+\+Sum}
+\item 
+\Hypertarget{parrot__core1_8c_ad6065925df36ccf0651c7de04504b70c}\label{parrot__core1_8c_ad6065925df36ccf0651c7de04504b70c} 
+uint16\+\_\+t {\bfseries Wet\+Dry\+\_\+\+MA} \mbox{[}16\mbox{]}
+\item 
+\Hypertarget{parrot__core1_8c_a56b48615d3c25daf1379295b4dfc6f9a}\label{parrot__core1_8c_a56b48615d3c25daf1379295b4dfc6f9a} 
+uint {\bfseries Wet\+Dry\+\_\+\+MA\+\_\+\+Ptr}
+\item 
+\Hypertarget{parrot__core1_8c_aaac0f62fd26a778720aba9d7c1c6ad33}\label{parrot__core1_8c_aaac0f62fd26a778720aba9d7c1c6ad33} 
+uint16\+\_\+t {\bfseries Wet\+Dry\+\_\+\+Average}
+\item 
+\Hypertarget{parrot__core1_8c_a4faa5c4a10babdbbfd1c2be2ede64a0b}\label{parrot__core1_8c_a4faa5c4a10babdbbfd1c2be2ede64a0b} 
+long {\bfseries Wet\+Dry\+\_\+\+MA\+\_\+\+Sum}
+\item 
+\Hypertarget{parrot__core1_8c_ab7f48816d599dac57701e8209d217857}\label{parrot__core1_8c_ab7f48816d599dac57701e8209d217857} 
+uint32\+\_\+t {\bfseries Ext\+Clock\+\_\+\+MA} \mbox{[}16\mbox{]}
+\item 
+\Hypertarget{parrot__core1_8c_ad76d9a51e0e19ff5dc32880b9ca9ba43}\label{parrot__core1_8c_ad76d9a51e0e19ff5dc32880b9ca9ba43} 
+uint {\bfseries Ext\+Clock\+\_\+\+MA\+\_\+\+Ptr}
+\item 
+\Hypertarget{parrot__core1_8c_a7519e6a9b82164f8a22992fceaef27d4}\label{parrot__core1_8c_a7519e6a9b82164f8a22992fceaef27d4} 
+uint32\+\_\+t {\bfseries Ext\+Clock\+\_\+\+Average}
+\item 
+\Hypertarget{parrot__core1_8c_a9ddc2e887189d12bdfca493a63ccc022}\label{parrot__core1_8c_a9ddc2e887189d12bdfca493a63ccc022} 
+long {\bfseries Ext\+Clock\+\_\+\+MA\+\_\+\+Sum}
+\item 
+\Hypertarget{parrot__core1_8c_a24c48207272f896c8db10af544391fce}\label{parrot__core1_8c_a24c48207272f896c8db10af544391fce} 
+uint8\+\_\+t {\bfseries lrmem} = 3
+\item 
+\Hypertarget{parrot__core1_8c_a7d0e2866b37580f900076a038bee5aa5}\label{parrot__core1_8c_a7d0e2866b37580f900076a038bee5aa5} 
+int {\bfseries lrsum} = 0
+\item 
+\Hypertarget{parrot__core1_8c_a92b43dc95043cb23dab3ca60efc0e6dc}\label{parrot__core1_8c_a92b43dc95043cb23dab3ca60efc0e6dc} 
+int8\+\_\+t {\bfseries TRANS} \mbox{[}$\,$\mbox{]} = \{0, -\/1, 1, 14, 1, 0, 14, -\/1, -\/1, 14, 0, 1, 14, 1, -\/1, 0\}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains all functions that run on the second core of the Pico (Core1) These are primarily the internal and external clock routines and the less time-\/critical user interface routines
+
+In general global variables are set by routines in parrot\+\_\+core1, then read and acted upon by the time-\/critical functions in parrot\+\_\+main 
+
+\doxysubsection{Function Documentation}
+\Hypertarget{parrot__core1_8c_afe21adbf567c42a41a4709480efb2125}\index{parrot\_core1.c@{parrot\_core1.c}!checkRotaryEncoder@{checkRotaryEncoder}}
+\index{checkRotaryEncoder@{checkRotaryEncoder}!parrot\_core1.c@{parrot\_core1.c}}
+\doxysubsubsection{\texorpdfstring{checkRotaryEncoder()}{checkRotaryEncoder()}}
+{\footnotesize\ttfamily \label{parrot__core1_8c_afe21adbf567c42a41a4709480efb2125} 
+int8\+\_\+t check\+Rotary\+Encoder (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Rotary Encoder finite state machine. 
+
+This comes from a technical paper by Marko Pinteric \href{https://www.pinteric.com/rotary.html}{\texttt{ https\+://www.\+pinteric.\+com/rotary.\+html}}, with additions by Ralph S. Bacon \href{https://github.com/RalphBacon/226-Better-Rotary-Encoder&mdash;no-switch-bounce}{\texttt{ https\+://github.\+com/\+Ralph\+Bacon/226-\/\+Better-\/\+Rotary-\/\+Encoder---no-\/switch-\/bounce}} \Hypertarget{parrot__core1_8c_a1e9b9a3be6c4b6075d04de40a2e21978}\index{parrot\_core1.c@{parrot\_core1.c}!clock\_callback@{clock\_callback}}
+\index{clock\_callback@{clock\_callback}!parrot\_core1.c@{parrot\_core1.c}}
+\doxysubsubsection{\texorpdfstring{clock\_callback()}{clock\_callback()}}
+{\footnotesize\ttfamily \label{parrot__core1_8c_a1e9b9a3be6c4b6075d04de40a2e21978} 
+void clock\+\_\+callback (\begin{DoxyParamCaption}\item[{uint}]{gpio}{, }\item[{uint32\+\_\+t}]{events}{}\end{DoxyParamCaption})}
+
+
+
+event handler for the incoming clock IRQ this is normalled from the internal clock via the external clock input jack. 
+
+should be triggered on both the rising and falling edges \Hypertarget{parrot__core1_8c_a66e3dbe6039c9461b397296f63ff685a}\index{parrot\_core1.c@{parrot\_core1.c}!encoder\_IRQ\_handler@{encoder\_IRQ\_handler}}
+\index{encoder\_IRQ\_handler@{encoder\_IRQ\_handler}!parrot\_core1.c@{parrot\_core1.c}}
+\doxysubsubsection{\texorpdfstring{encoder\_IRQ\_handler()}{encoder\_IRQ\_handler()}}
+{\footnotesize\ttfamily \label{parrot__core1_8c_a66e3dbe6039c9461b397296f63ff685a} 
+void encoder\+\_\+\+IRQ\+\_\+handler (\begin{DoxyParamCaption}\item[{uint}]{gpio}{, }\item[{uint32\+\_\+t}]{events}{}\end{DoxyParamCaption})}
+
+
+
+Rotary Encoder IRQ callback. 
+
+In Free-\/running mode (ie sync\textquotesingle{}d to the internal or external clock) this increases or decreases the target\+Delay, which is the delay that the glb\+Delay value is aiming for, but ony moving towards by one sample at a time.
+
+The larger the target delay, the larger the increment and therefore the lower the resolution 

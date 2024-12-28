@@ -1,0 +1,111 @@
+\doxysection{F\+:/\+Dev/\+Parrot/parrot\+\_\+func.c File Reference}
+\hypertarget{parrot__func_8c}{}\label{parrot__func_8c}\index{F:/Dev/Parrot/parrot\_func.c@{F:/Dev/Parrot/parrot\_func.c}}
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include "{}parrot.\+h"{}}\newline
+{\ttfamily \#include "{}psram\+\_\+spi.\+h"{}}\newline
+{\ttfamily \#include $<$math.\+h$>$}\newline
+{\ttfamily \#include "{}pico/float.\+h"{}}\newline
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{parrot__func_8c_adbe048341e73f4fc9483b47e619b050a}\label{parrot__func_8c_adbe048341e73f4fc9483b47e619b050a} 
+\#define {\bfseries SHIFT\+\_\+\+AMOUNT}~8
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+float \mbox{\hyperlink{parrot__func_8c_ab2b4a2e0486a5936db165dbbd01e6d3f}{single\+\_\+delay}} (union \mbox{\hyperlink{unionu_sample}{u\+Sample}} In\+Sample)
+\begin{DoxyCompactList}\small\item\em Single Delay. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{parrot__func_8c_a41208a1e99d4c2a2ea5c1b05e1245979}{single\+\_\+tap}} (union \mbox{\hyperlink{unionu_sample}{u\+Sample}} In\+Sample, float gain)
+\begin{DoxyCompactList}\small\item\em Single-\/tap delay. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{parrot__func_8c_a083bd0b6658b1c5a5084a33f3ff5b12d}{Ping\+\_\+\+Pong}} (union \mbox{\hyperlink{unionu_sample}{u\+Sample}} In\+Sample, float gain, bool Left\+Right)
+\begin{DoxyCompactList}\small\item\em Ping Pong delay. \end{DoxyCompactList}\item 
+\Hypertarget{parrot__func_8c_aef5b39fa55da0c64b292f2191c3a4400}\label{parrot__func_8c_aef5b39fa55da0c64b292f2191c3a4400} 
+int32\+\_\+t {\bfseries single\+\_\+tap\+\_\+shift} (int32\+\_\+t In\+Sample, uint32\+\_\+t delay, uint8\+\_\+t gain)
+\item 
+float \mbox{\hyperlink{parrot__func_8c_a1589846b899ca451fccd7b1182fb2d69}{rational\+\_\+tanh}} (float x)
+\begin{DoxyCompactList}\small\item\em rational tanh \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{parrot__func_8c_a4acb92ba8226b09c90765256ab07387e}{soft\+\_\+clip}} (float x)
+\begin{DoxyCompactList}\small\item\em Soft Clip function. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Various signal processing functions 
+
+\doxysubsection{Function Documentation}
+\Hypertarget{parrot__func_8c_a083bd0b6658b1c5a5084a33f3ff5b12d}\index{parrot\_func.c@{parrot\_func.c}!Ping\_Pong@{Ping\_Pong}}
+\index{Ping\_Pong@{Ping\_Pong}!parrot\_func.c@{parrot\_func.c}}
+\doxysubsubsection{\texorpdfstring{Ping\_Pong()}{Ping\_Pong()}}
+{\footnotesize\ttfamily \label{parrot__func_8c_a083bd0b6658b1c5a5084a33f3ff5b12d} 
+float Ping\+\_\+\+Pong (\begin{DoxyParamCaption}\item[{union \mbox{\hyperlink{unionu_sample}{u\+Sample}}}]{In\+Sample}{, }\item[{float}]{gain}{, }\item[{bool}]{Left\+Right}{}\end{DoxyParamCaption})}
+
+
+
+Ping Pong delay. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em In\+Sample} & current input sample \\
+\hline
+{\em gain} & feedback gain \\
+\hline
+{\em Left\+Right} & whether this is the Left or Right channel \\
+\hline
+\end{DoxyParams}
+\Hypertarget{parrot__func_8c_a1589846b899ca451fccd7b1182fb2d69}\index{parrot\_func.c@{parrot\_func.c}!rational\_tanh@{rational\_tanh}}
+\index{rational\_tanh@{rational\_tanh}!parrot\_func.c@{parrot\_func.c}}
+\doxysubsubsection{\texorpdfstring{rational\_tanh()}{rational\_tanh()}}
+{\footnotesize\ttfamily \label{parrot__func_8c_a1589846b899ca451fccd7b1182fb2d69} 
+float rational\+\_\+tanh (\begin{DoxyParamCaption}\item[{float}]{x}{}\end{DoxyParamCaption})}
+
+
+
+rational tanh 
+
+This is a rational function to approximate a tanh-\/like soft clipper. It is based on the pade-\/approximation of the tanh function with tweaked coefficients. The function is in the range x=-\/3..3 and outputs the range y=-\/1..1. Beyond this range the output must be clamped to -\/1..1. The first two derivatives of the function vanish at -\/3 and 3, so the transition to the hard clipped region is C2-\/continuous. \Hypertarget{parrot__func_8c_ab2b4a2e0486a5936db165dbbd01e6d3f}\index{parrot\_func.c@{parrot\_func.c}!single\_delay@{single\_delay}}
+\index{single\_delay@{single\_delay}!parrot\_func.c@{parrot\_func.c}}
+\doxysubsubsection{\texorpdfstring{single\_delay()}{single\_delay()}}
+{\footnotesize\ttfamily \label{parrot__func_8c_ab2b4a2e0486a5936db165dbbd01e6d3f} 
+float single\+\_\+delay (\begin{DoxyParamCaption}\item[{union \mbox{\hyperlink{unionu_sample}{u\+Sample}}}]{In\+Sample}{}\end{DoxyParamCaption})}
+
+
+
+Single Delay. 
+
+Just writes the Input Sample to the current write point, and returns the delayed sample pointed to by the Read Pointer
+
+
+\begin{DoxyParams}{Parameters}
+{\em In\+Sample} & Input Sample from Audio buffer \\
+\hline
+\end{DoxyParams}
+\Hypertarget{parrot__func_8c_a41208a1e99d4c2a2ea5c1b05e1245979}\index{parrot\_func.c@{parrot\_func.c}!single\_tap@{single\_tap}}
+\index{single\_tap@{single\_tap}!parrot\_func.c@{parrot\_func.c}}
+\doxysubsubsection{\texorpdfstring{single\_tap()}{single\_tap()}}
+{\footnotesize\ttfamily \label{parrot__func_8c_a41208a1e99d4c2a2ea5c1b05e1245979} 
+float single\+\_\+tap (\begin{DoxyParamCaption}\item[{union \mbox{\hyperlink{unionu_sample}{u\+Sample}}}]{In\+Sample}{, }\item[{float}]{gain}{}\end{DoxyParamCaption})}
+
+
+
+Single-\/tap delay. 
+
+Single-\/tap delay -\/ writes a mix of the delayed signal with the current input sample, and writes it to the current write position in the buffer.
+
+
+\begin{DoxyParams}{Parameters}
+{\em In\+Sample} & Current Sample from the Audio Input buffer \\
+\hline
+{\em gain} & feedback gain \\
+\hline
+\end{DoxyParams}
+\Hypertarget{parrot__func_8c_a4acb92ba8226b09c90765256ab07387e}\index{parrot\_func.c@{parrot\_func.c}!soft\_clip@{soft\_clip}}
+\index{soft\_clip@{soft\_clip}!parrot\_func.c@{parrot\_func.c}}
+\doxysubsubsection{\texorpdfstring{soft\_clip()}{soft\_clip()}}
+{\footnotesize\ttfamily \label{parrot__func_8c_a4acb92ba8226b09c90765256ab07387e} 
+float soft\+\_\+clip (\begin{DoxyParamCaption}\item[{float}]{x}{}\end{DoxyParamCaption})}
+
+
+
+Soft Clip function. 
+
+implements a 1.\+5x -\/ 0.\+5x\texorpdfstring{$^\wedge$}{\string^}3 waveshaper 

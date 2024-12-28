@@ -1,0 +1,8 @@
+# Gerber files
+*.CUT
+*.GBL
+
+# Build directory
+build
+
+
