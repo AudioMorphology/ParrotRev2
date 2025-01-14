@@ -155,6 +155,8 @@ extern float FeedbackPercent;
 void core1_entry(void);
 
 // function prototypes - parrot_func.c
+float WaveFolder(float, float);
+float WaveWrapper(float, float);
 extern psram_spi_inst_t psram_spi;
 float single_delay(union uSample);
 float single_tap(union uSample, float);

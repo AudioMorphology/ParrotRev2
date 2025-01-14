@@ -1,6 +1,6 @@
 /******************************************************************************
 
-parrot
+The Camberwell Parrot
 
 Copyright © 2024 Richard R. Goodwin / Audio Morphology Ltd.
 
@@ -35,6 +35,55 @@ SOFTWARE.
 
 #include "pico/float.h"
 #define SHIFT_AMOUNT 8
+
+#define FUZZ(x) CubicAmplifier(CubicAmplifier(CubicAmplifier(CubicAmplifier(x))))
+#define RTH(x) rational_tanh(x);
+
+/**
+ * @brief wavefolder
+ * 
+ * Basic mathematical wavefolder - takes a sample
+ * and a gain (from 0 to 1) and applies a simple 
+ * mathematical fold to the output
+ *  */
+float WaveFolder(float input, float gain){
+    float output = input * (1.0f + (gain * 2.0f));
+    if (output > 1.0f) output = 2.0f - output;
+    else if (output < -1.0f) output = -2.0f - output;
+    return output;
+}
+
+/**
+ * @brief WaveWrapper
+ * 
+ * Basic mathematical wrap function takes an input
+ * sample and a Gain in the range 0 .. 1
+ */
+float WaveWrapper(float input, float gain){
+    float output = input * (1.0f + (gain * 2.0f));
+    if (output > 1.0f) output -= 2.0f;
+    else if (output < -1.0f) output += 2.0f;
+    return output;
+}
+
+/**
+ * @brief
+ * 
+ * Non-linear amplifier with soft distortion curve.
+ */
+float CubicAmplifier( float input )
+{
+    float output, temp;
+    if( input < 0.0 ) {
+        temp = input + 1.0f;
+        output = (temp * temp * temp) - 1.0f;
+    }
+    else {
+        temp = input - 1.0f;
+        output = (temp * temp * temp) + 1.0f;
+    }
+    return output;
+}
 
 /**
  * @brief Single Delay
@@ -116,14 +165,10 @@ int32_t single_tap_shift(int32_t InSample, uint32_t delay, uint8_t gain){
  * The first two derivatives of the function vanish at -3 and 3, 
  * so the transition to the hard clipped region is C2-continuous.
  */
-float rational_tanh(float x)
-{
-    if( x < -3.0f )
-        return -1.0;
-    else if( x > 3.0f )
-        return 1.0;
-    else
-        return x * ( 27.0f + x * x ) / ( 27.0f + 9.0f * x * x );
+float rational_tanh(float x) {
+    if( x < -3.0f ) return -1.0;
+    else if( x > 3.0f ) return 1.0;
+    else return x * ( 27.0f + x * x ) / ( 27.0f + 9.0f * x * x );
 }
 
 /**
@@ -132,9 +177,7 @@ float rational_tanh(float x)
  * implements a 1.5x - 0.5x^3 waveshaper
  */
 float soft_clip(float x) {
-    if (x > 1)
-     x = 1;
-if (x < -1)
-     x = -1;
-return 1.5 * x - 0.5 * x * x * x; // Simple f(x) = 1.5x - 0.5x^3 waveshaper
+    if (x > 1) x = 1;
+    if (x < -1) x = -1;
+    return 1.5 * x - 0.5 * x * x * x; // Simple f(x) = 1.5x - 0.5x^3 waveshaper
 }

@@ -117,6 +117,7 @@ int8_t checkRotaryEncoder()
     lrsum = 0;
     return 0;
 }
+
 /**
  * @brief Rotary Encoder IRQ callback
  * 
@@ -138,25 +139,25 @@ void encoder_IRQ_handler(uint gpio,uint32_t events){
       // increments to arrive at something meaningful
       switch(targetDelay){
         case 0 ... 10:
-          glbIncrement = 1;
+          glbIncrement = 10;
         break;
         case 11 ... 100:
           glbIncrement = 10;
         break;
         case 101 ... 1000:
-          glbIncrement = 100;
+          glbIncrement = 10;
         break;
         case 1001 ... 10000:
-          glbIncrement = 1000;
+          glbIncrement = 100;
         break;
         case 10001 ... 100000:
-          glbIncrement = 10000;
+          glbIncrement = 1000;
         break;
         case 100001 ... 1000000:
-          glbIncrement = 100000;
+          glbIncrement = 10000;
         break;
         case 1000001 ... 10000000:
-          glbIncrement = 1000000;
+          glbIncrement = 100000;
         break;
         default:
           glbIncrement = 48000;
@@ -170,7 +171,7 @@ void encoder_IRQ_handler(uint gpio,uint32_t events){
       // At very large increments it takes the glbDelay a long time to 
       // reach the target, so just bump it
       if (glbIncrement > 10000) glbDelay = targetDelay;
-      // printf("Increment: %d, Target Delay: %d\n",glbIncrement, targetDelay);
+      //printf("Increment: %d, Target Delay: %d\n",glbIncrement, targetDelay);
     }
   }
 }
@@ -179,15 +180,22 @@ void encoder_IRQ_handler(uint gpio,uint32_t events){
  * this is normalled from the internal clock via the 
  * external clock input jack.
  * 
- * should be triggered on both the rising and falling edges
+ * The Cortex M0 in the original RPi Pico only supports 
+ * a single IRQ per core, so within the IRQ handler
+ * you need to determine which GPIO has triggered the 
+ * Interrupt 
  */
 void clock_callback(uint gpio, uint32_t events){
     // All interrupts end up here, so Check which gpio
     // triggered the interrupt and dispatch accordingly
     if ((gpio == ENCODERA_IN) || (gpio == ENCODERB_IN)) encoder_IRQ_handler(gpio, events);
     else{
+    // Blink the on-board LED in phase with the incoming clock
+    gpio_put(ONBOARD_LED,!gpio_get(CLOCK_IN));
     // Note the clock period on rising edge trigger
-    // this is (currently) the Delay
+    // this avoids issues with duty cycle or PWM
+    // TODO - due to the Inverting input buffer, maybe
+    // this should be triggered on the Falling Edge??
     if (events & GPIO_IRQ_EDGE_RISE) {
       // It took ages to find a way of persuading the GCC compiler
       // to let a Global variable be updated from within an ISR - it
@@ -203,8 +211,6 @@ void clock_callback(uint gpio, uint32_t events){
       if(ExtClock_MA_Ptr >=  ExtClock_MA_Len) ExtClock_MA_Ptr = 0;
       ExtClockPeriod = ExtClock_MA_Sum / ExtClock_MA_Len;
       LEDPhase = !LEDPhase;
-      //printf("Led Phase: %d\n",LEDPhase);
-      gpio_put(ONBOARD_LED,LEDPhase);
     }
   }
 }
@@ -355,7 +361,7 @@ void updateDivisor(){
     if (time_us_64() >= DivisorChangedTime + DeBounceTime){
       // we can trust this value, so set the global if different
       if (glbDivisor != (int)thisDivisor) {
-        //todo poss protect with spinlocks?
+        //TODO poss protect with spinlocks?
         glbDivisor = (int)thisDivisor;
         glbRatio = divisors[thisDivisor];
         //printf("Divisor = %d, Ratio = %f\n",glbDivisor, glbRatio); 
@@ -367,12 +373,22 @@ void updateDivisor(){
 /**
  * @brief updates the status of the Sync/Free global variable
  * only reason this is in a function is so that it can test the 
- * current state, and output a message if/when the state changes 
+ * current state, and output a message if/when the state changes
+ * This also means it minimises race conditions, as the Global
+ * SyncFree variable is only updated when it changes
+ * 
+ * NOTE: 1 = Sync'd to Int/Ext Clock, 0 = Free-Running 
  */
 void updateSyncFree(){
   int ThisSync = gpio_get(SYNC_FREE);
   if (ThisSync != SyncFree){
     SyncFree = ThisSync;
+    // If just switched to free-running, set the target
+    // delay = Global Delay ie that when changing from 
+    // Sync'd to free running you shouldn't notice any 
+    // change, but the actuall delat can be adjusted up  
+    // or down from that point.
+    if (SyncFree == 0) targetDelay = glbDelay;
     //printf("Sync / Free switch = %d\n",SyncFree);
   } 
 }

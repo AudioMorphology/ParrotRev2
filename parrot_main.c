@@ -45,17 +45,20 @@ SOFTWARE.
 uint32_t ReadPointer = 0;
 uint32_t WritePointer = 0;
 
+float glbWet = 0;                   // wet/dry multipliers                   
+float glbDry = 1;                   // Between 0 and 1
+float glbFeedback = 0.1;            // Global feedback level (between 0 and 1)
 float glbRatio = 1.00;              // Global Clock Multiplication / Division ratio
 int glbDivisor;                     // Global value for the mul/div switch (0 to 15)
-int glbAlgorithm;                   // global value for Algorithm switch used by other functions
-int glbEncoderSw;                   // global value for Encoder Switch used by other functions
+int glbAlgorithm;                   // Global value for Algorithm switch used by other functions
+int glbEncoderSw;                   // Global value for Encoder Switch used by other functions
 int LatestEncoderSw = 0;            // latest value for the Encoder Switch
-uint64_t EncoderSwChangedTime;      // Time at which the Encoder Switch changed
+uint64_t EncoderSwChangedTime;      // Time at which the Encoder Switch last changed
 
 uint64_t DeBounceTime = 200000;     // Switch Debounce time in uS
 
-float glbFeedback = 0.1;
 uint32_t encoder_tick = 0;
+
 uint32_t glbDelay;                  // The actual current Delay (in Samples)
 uint32_t targetDelay;               // The target Delay (in samples) - glbDelay will ramp towards this value
 int32_t PreviousClockPeriod = 0;    //
@@ -63,13 +66,6 @@ uint32_t glbIncrement = 1;          // How many samples the delay is increased o
 int spinlock_num_glbDelay;          // used to store the number of the spinlock
 spin_lock_t *spinlock_glbDelay;     // Used to lock access to glbDelay
 
-int rampcount = 0;
-int ThisLeft;
-int PreviousLeft;
-int ThisRight;
-int PreviousRight;  
-float glbWet = 0;                   // wet/dry multipliers                   
-float glbDry = 1;
 /**
  * @brief An array of multipliers, which are applied to the master internal
  * or external clock frequency to set the delay time as a multiple of the clock period
@@ -146,6 +142,18 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
             case 3:
                 ThisSample.fSample = single_delay(ThisSample);
                 break;
+            case 4:
+                ThisSample.fSample = single_delay(ThisSample);
+                break;
+            case 5:
+                ThisSample.fSample = single_delay(ThisSample);
+                break;
+            case 6:
+                ThisSample.fSample = single_delay(ThisSample);
+                break;
+            case 7:
+                ThisSample.fSample = WaveWrapper(ThisSample.fSample,glbWet);
+                break;
             default:
                 ThisSample.fSample = single_tap(ThisSample, glbFeedback);
                 break;
@@ -175,6 +183,18 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 break;
             case 3:
                 ThisSample.fSample = single_delay(ThisSample);
+                break;
+            case 4:
+                ThisSample.fSample = single_delay(ThisSample);
+                break;
+            case 5:
+                ThisSample.fSample = single_delay(ThisSample);
+                break;
+            case 6:
+                ThisSample.fSample = single_delay(ThisSample);
+                break;
+            case 7:
+                ThisSample.fSample = WaveFolder(ThisSample.fSample,glbWet);
                 break;
             default:
                 ThisSample.fSample = single_tap(ThisSample, glbFeedback);
@@ -273,7 +293,6 @@ int main(){
     gpio_set_dir(POWERSAVE_PIN,GPIO_OUT);
     gpio_put(POWERSAVE_PIN,1);
 
-
     // PCM 5102 soft mute
     gpio_init(XSMT_PIN);
     gpio_set_dir(XSMT_PIN,GPIO_OUT);
@@ -293,8 +312,8 @@ int main(){
     // Give the Write Pointer a head start & set the 
     // target delays
     ReadPointer = 0;
-    WritePointer = 48000;
-    targetDelay = 48000;
+    WritePointer = 0;
+    targetDelay = 0;
     glbDelay = 0;
     ExtClockPeriod = 48000;
 
