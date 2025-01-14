@@ -28,19 +28,24 @@
 #include "i2s.pio.h"
 
 /*
+// config structure is in i2s.h but copied
+// here for reference when setting the config
+// default (below)
+// 
+// Pinouts updated for Rev2 Hardware
 typedef struct i2s_config {
-    uint32_t fs;
-    uint32_t sck_mult;
-    uint8_t  bit_depth;
-    uint8_t  sck_pin;
-    uint8_t  dout_pin;
-    uint8_t  din_pin;
-    uint8_t  clock_pin_base;
-    bool     sck_enable;
+    uint32_t fs;                // Sample freq (48kHz)
+    uint32_t sck_mult;          // BCK / SCK divisor ratio
+    uint8_t  bit_depth;         // 32-Bit
+    uint8_t  sck_pin;           // I2S_SCK
+    uint8_t  dout_pin;          // I2S_DOUT
+    uint8_t  din_pin;           // I2S_DIN
+    uint8_t  clock_pin_base;    // I2S_BCK
+    bool     sck_enable;        // true
 } i2s_config;
 */
 
-const i2s_config i2s_config_default = {48000, 256, 32, 10, 6, 7, 8, true};
+const i2s_config i2s_config_default = {48000, 256, 32, 11, 7, 8, 9, true};
 
 static float pio_div(float freq, uint16_t* div, uint8_t* frac) {
     float clk   = (float)clock_get_hz(clk_sys);

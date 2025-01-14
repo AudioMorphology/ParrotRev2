@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 # Set the Pico board/processor type
-set(PICO_BOARD pico) 
+set(PICO_BOARD pico2) 
 
 # Include build functions from Pico SDK
 include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)

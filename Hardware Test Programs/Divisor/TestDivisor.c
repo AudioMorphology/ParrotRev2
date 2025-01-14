@@ -36,9 +36,18 @@ SOFTWARE.
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "parrot.h"
+#include "hardware/clocks.h"
 
-float glbDivisor = 1;
-uint32_t PrevDivisor = 0;
+float glbRatio = 1.00;
+int glbDivisor;
+int LatestDivisor;
+uint64_t DivisorChangedTime;
+
+int glbAlgorithm;               // global value for divisor used by other functions
+int LatestAlgorithm = 0;        // latest value for the Divisor that may or may not be the same as glbDivisor
+uint64_t AlgorithmChangedTime;  // Time at which the divisor changed
+uint64_t DeBounceTime = 200000; // Debounce time in uS
+
 /**
  * @brief An array of multipliers, which are applied to the master internal
  * or external clock frequency to set the delay time as a multiple of the clock period
@@ -51,17 +60,56 @@ float divisors[] = {1,2,3,4,5,6,8,12,1,0.5,0.33333,0.25,0.2,0.166666,0.125,0.083
  * @brief read the 4-Bit BCD value from the Divisor switch, read
  * the appropriate Divisor (multiple of the clock period) and set
  * the global divisor value accordingly
+ * 
+ * This implements a software de-bounce, which looks for any
+ * change to be stable for at least 200ms before deciding that
+ * it can be trusted
  */
 void updateDivisor(){
-  uint32_t Divisor = gpio_get_all();
-  Divisor = Divisor >> 2;             // shift so that gpio2 is LSB
-  Divisor &= 0xf;
-  if (Divisor > 15) Divisor = 15;
-  glbDivisor = divisors[Divisor];
-  if (PrevDivisor != Divisor) {
-    // Only print if it changes
-    PrevDivisor = Divisor;
-    printf("Divisor = %d, glbDivisor = %f\n",Divisor, glbDivisor); 
+  uint32_t thisDivisor = gpio_get_all();
+  thisDivisor = thisDivisor >> 3;             // shift so that gpio3 is LSB
+  thisDivisor &= 0xf;
+  if (thisDivisor > 15) thisDivisor = 15;
+  if ((int)thisDivisor != LatestDivisor) {
+    LatestDivisor = thisDivisor;
+    // note the time of the most recent change
+    DivisorChangedTime = time_us_64();
+  } else {
+    if (time_us_64() >= DivisorChangedTime + DeBounceTime){
+      // we can trust this value, so set the global if different
+      if (glbDivisor != (int)thisDivisor) {
+        //todo poss protect with spinlocks?
+        glbDivisor = (int)thisDivisor;
+        glbRatio = divisors[thisDivisor];
+        printf("Divisor = %d, Ratio = %f\n",glbDivisor, glbRatio); 
+      }
+    }
+  }
+}
+
+/**
+ * @brief read the 3-Bit BCD value from the Algorithm switch
+ * 
+ * This implements a software de-bounce, which looks for any
+ * change to be stable for at least 200ms before deciding that
+ * it can be trusted
+ */
+void updateAlgorithm(){
+  uint32_t thisAlgorithm = gpio_get_all();
+  thisAlgorithm &= 0x7;
+  if (thisAlgorithm > 7) thisAlgorithm = 7;
+  if ((int)thisAlgorithm != LatestAlgorithm) {
+    LatestAlgorithm = thisAlgorithm;
+    AlgorithmChangedTime = time_us_64();
+  } else {
+    if (time_us_64() >= AlgorithmChangedTime + DeBounceTime){
+      // we can trust this value, so set the global if different
+      if (glbAlgorithm != (int)thisAlgorithm) {
+        //todo poss protect with spinlocks?
+        glbAlgorithm = (int)thisAlgorithm;
+        printf("Algorithm = %d\n",glbAlgorithm); 
+      }
+    }
   }
 }
 
@@ -79,24 +127,40 @@ int main(){
       printf("Waiting to start %d\n",20-i);
       sleep_ms(1000);
     }
+    for(int i = 1;i <= 40; i++){
+      printf("\n");
+    }
     // 8-Way switch + mul/div toggle are
     // BCD-encoded into a 4-Bit number
-    // Internal Pull-down resistors serve no purpose
-    gpio_init(DIVISOR_A);
-    gpio_set_dir(DIVISOR_A,GPIO_IN);
-    //gpio_pull_down(DIVISOR_A);
-    gpio_init(DIVISOR_B);
-    gpio_set_dir(DIVISOR_B,GPIO_IN);
-    //gpio_pull_down(DIVISOR_B);
-    gpio_init(DIVISOR_C);
-    gpio_set_dir(DIVISOR_C,GPIO_IN);
-    //gpio_pull_down(DIVISOR_C);
-    gpio_init(DIVISOR_D);
-    gpio_set_dir(DIVISOR_D,GPIO_IN);
-    gpio_pull_up(DIVISOR_D);    // Switched to ground, so use Pull UP
+    gpio_init(DIVISOR_0);
+    gpio_set_dir(DIVISOR_0,GPIO_IN);
+    gpio_init(DIVISOR_1);
+    gpio_set_dir(DIVISOR_1,GPIO_IN);
+    gpio_init(DIVISOR_2);
+    gpio_set_dir(DIVISOR_2,GPIO_IN);
+    gpio_init(DIVISOR_3);
+    gpio_set_dir(DIVISOR_3,GPIO_IN);
+    gpio_pull_up(DIVISOR_3);    // Switched to ground, so use Pull UP
+    // 8-Way switch BCD-encoded into 
+    // a 3-Bit number
+    gpio_init(ALGORITHM_0);
+    gpio_set_dir(ALGORITHM_0,GPIO_IN);
+    gpio_init(ALGORITHM_1);
+    gpio_set_dir(ALGORITHM_1,GPIO_IN);
+    gpio_init(ALGORITHM_2);
+    gpio_set_dir(ALGORITHM_2,GPIO_IN);
+
+    LatestDivisor = 0;
+    glbDivisor = 0;
+    glbRatio = 1.00;
+    DivisorChangedTime = time_us_64();
+    LatestAlgorithm = 0;
+    glbAlgorithm = 0;
+    AlgorithmChangedTime = time_us_64();
 
     while(1){
         updateDivisor();
+        updateAlgorithm();
         tight_loop_contents();
     }
 

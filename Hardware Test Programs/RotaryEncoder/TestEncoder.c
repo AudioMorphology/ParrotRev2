@@ -53,6 +53,12 @@ uint32_t PrevClick;
 uint32_t ThisClick;
 uint32_t ClickDiff;
 
+int glbEncoderSw;                 // global value for divisor used by other functions
+int LatestEncoderSw = 0;          // latest value for the Divisor that may or may not be the same as glbDivisor
+uint64_t EncoderSwChangedTime;    // Time at which the divisor changed
+uint64_t DeBounceTime = 200000;   // Debounce time in uS
+
+
 // Rotary encoder state transition table
 int8_t TRANS[] = {0, -1, 1, 14, 1, 0, 14, -1, -1, 14, 0, 1, 14, 1, -1, 0};
 
@@ -96,59 +102,7 @@ void poll_encoder(){
   int8_t dir = checkRotaryEncoder();
     if (dir != 0){
     // Only alter the delay if we're free-running
-    if (SyncFree == 0){
-
-
-    ThisClick = time_us_32();
-    ClickDiff = ThisClick - PrevClick;
-    PrevClick = ThisClick;
-    // run it through a Moving Average buffer to reduce abrupt changes
-    Encoder_MA_Sum = Encoder_MA_Sum - Encoder_MA[Encoder_MA_Ptr] + ClickDiff;
-    Encoder_MA[Encoder_MA_Ptr++] = ClickDiff;
-    if(Encoder_MA_Ptr >=  Encoder_MA_Len) Encoder_MA_Ptr = 0;
-    ClickDiff = Encoder_MA_Sum / Encoder_MA_Len;
-    printf("Speed = %d\n",ClickDiff);
-
-
-      // Increment depends on the current increment value
-      // TODO: probably play with these thresholds and
-      // increments to arrive at something meaningful
-      switch(targetDelay){
-        case 0 ... 10:
-          glbIncrement = 1;
-        break;
-        case 11 ... 100:
-          glbIncrement = 10;
-        break;
-        case 101 ... 1000:
-          glbIncrement = 100;
-        break;
-        case 1001 ... 10000:
-          glbIncrement = 1000;
-        break;
-        case 10001 ... 100000:
-          glbIncrement = 10000;
-        break;
-        case 100001 ... 1000000:
-          glbIncrement = 100000;
-        break;
-        case 1000001 ... 10000000:
-          glbIncrement = 1000000;
-        break;
-        default:
-          glbIncrement = 48000;
-      }
-      if (dir == 1){
-        if ((targetDelay+glbIncrement) < BUF_LEN) targetDelay += glbIncrement; else targetDelay = BUF_LEN;
-      }
-      else {
-        if (targetDelay > glbIncrement) targetDelay -= glbIncrement; else targetDelay = 1;
-      }
-      // At very large increments it takes the glbDelay a long time to 
-      // reach the target, so just bump it
-      if (glbIncrement > 10000) glbDelay = targetDelay;
-      //printf("Dir: %d, Increment: %d, Target Delay: %d\n",dir, glbIncrement, targetDelay);
-    }
+    printf("Direction: %d\n",dir);
   }
 }
 
@@ -234,8 +188,19 @@ void clock_callback(uint gpio, uint32_t events){
 }
 
 void checkReset(){
-  if(!gpio_get(ENCODER_SW)){
-    printf("Reset Button pressed\n");
+  int thisEncoderSw = gpio_get(ENCODER_SW);
+  if ((int)thisEncoderSw != LatestEncoderSw) {
+    LatestEncoderSw = thisEncoderSw;
+    EncoderSwChangedTime = time_us_64();
+  } else {
+    if (time_us_64() >= EncoderSwChangedTime + DeBounceTime){
+      // we can trust this value, so set the global if different
+      if (glbEncoderSw != (int)thisEncoderSw) {
+        //todo poss protect with spinlocks?
+        glbEncoderSw = (int)thisEncoderSw;
+        printf("Encoder Switch = %d\n",glbEncoderSw); 
+      }
+    }
   }
 }
 
@@ -281,6 +246,10 @@ int main(){
     Encoder_Average = 0;
     Encoder_MA_Sum = 0;
     PrevClick = time_us_32();
+    glbEncoderSw = 0;
+    LatestEncoderSw = 0;
+    EncoderSwChangedTime = time_us_64();
+
     while(1){
         checkReset();
         poll_encoder();

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-parrot
+The Camberwell Parrot
 
 Copyright © 2024 Richard R. Goodwin / Audio Morphology Ltd.
 
@@ -28,7 +28,7 @@ SOFTWARE.
  * 
  * Main program entry point
  * 
- * Project homepage: https://github.com/audiomorphology/Parrot
+ * Project homepage: https://github.com/audiomorphology/ParrotRev2
  */
 
 #include <stdio.h>
@@ -44,8 +44,17 @@ SOFTWARE.
 
 uint32_t ReadPointer = 0;
 uint32_t WritePointer = 0;
+
+float glbRatio = 1.00;              // Global Clock Multiplication / Division ratio
+int glbDivisor;                     // Global value for the mul/div switch (0 to 15)
+int glbAlgorithm;                   // global value for Algorithm switch used by other functions
+int glbEncoderSw;                   // global value for Encoder Switch used by other functions
+int LatestEncoderSw = 0;            // latest value for the Encoder Switch
+uint64_t EncoderSwChangedTime;      // Time at which the Encoder Switch changed
+
+uint64_t DeBounceTime = 200000;     // Switch Debounce time in uS
+
 float glbFeedback = 0.1;
-float glbDivisor = 1;
 uint32_t encoder_tick = 0;
 uint32_t glbDelay;                  // The actual current Delay (in Samples)
 uint32_t targetDelay;               // The target Delay (in samples) - glbDelay will ramp towards this value
@@ -53,7 +62,7 @@ int32_t PreviousClockPeriod = 0;    //
 uint32_t glbIncrement = 1;          // How many samples the delay is increased or decreased by via the rotary encoder
 int spinlock_num_glbDelay;          // used to store the number of the spinlock
 spin_lock_t *spinlock_glbDelay;     // Used to lock access to glbDelay
-int Algorithm = 0;                  // 4 selectable Algorithms (0 to 3)
+
 int rampcount = 0;
 int ThisLeft;
 int PreviousLeft;
@@ -65,9 +74,12 @@ float glbDry = 1;
  * @brief An array of multipliers, which are applied to the master internal
  * or external clock frequency to set the delay time as a multiple of the clock period
  * 
- * 1/12 1/8 1/6 1/5 1/4 1/3 1/2 1* 2* 3* 4* 5* 6* 8* 12*
+ * With just an 8-Way switch plus a multiply/divide switch, there are only 15 possible 
+ * values, so I've chosen the most common musically-relevant values
+ * 
+ * 1/12 1/9 1/8 1/6 1/4 1/3 1/2 1* 2* 3* 4* 6* 8* 9* 12*
  */
-float divisors[] = {1,2,3,4,5,6,8,12,1,0.5,0.33333,0.25,0.2,0.166666,0.125,0.083333};
+float divisors[] = {1,2,3,4,6,8,9,12,1,0.5,0.333333,0.25,0.166666,0.125,0.111111,0.083333};
 
 psram_spi_inst_t* async_spi_inst;
 psram_spi_inst_t psram_spi;
@@ -98,7 +110,9 @@ int get_sign(int32_t value)
  * @param num_frames number of L-R samples
  */
 static void process_audio(const int32_t* input, int32_t* output, size_t num_frames) {
-    // Left Sample first
+    /*
+    *   Left Channel Sample
+    */
     for (size_t i = 0; i < num_frames * 2; i++) {
         // If the delay changes, gradually ramping the actual delay 
         // towards the target delay helps to reduce glitches. 
@@ -117,7 +131,7 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
         union uSample DrySample;
         ThisSample.fSample = (float)input[i];
         DrySample.fSample = ThisSample.fSample;
-        switch(Algorithm){
+        switch(glbAlgorithm){
             case 0:
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback));
                 break;
@@ -141,11 +155,13 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
         if(ReadPointer >= BUF_LEN) ReadPointer = 0;
         WritePointer+=4;
         if(WritePointer >= BUF_LEN) WritePointer = 0;
-        // Right Channel Sample
+        /*
+        *   Right Channel Sample
+        */
         i++;
         ThisSample.fSample = (float)input[i];
         DrySample.fSample = ThisSample.fSample;
-        switch(Algorithm){
+        switch(glbAlgorithm){
             case 0:
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback));
                 break;
@@ -200,22 +216,37 @@ static void dma_i2s_in_handler(void) {
  * the output whilst this is happening
  */
 void checkReset(){
-  if(!gpio_get(ENCODER_SW)){
-    uint32_t ResetCounter;
-    uint32_t InterruptStatus;
-    // Mute the output
-    gpio_put(XSMT_PIN,0);
-    // Save and disable interrupts
-    InterruptStatus = save_and_disable_interrupts();
-    for(ResetCounter = 0;ResetCounter <= BUF_LEN; ResetCounter +=4){
-        psram_write32(&psram_spi, ResetCounter,0x0);
+  int thisEncoderSw = !gpio_get(ENCODER_SW);
+  if ((int)thisEncoderSw != LatestEncoderSw) {
+    LatestEncoderSw = thisEncoderSw;
+    EncoderSwChangedTime = time_us_64();
+  } else {
+    if (time_us_64() >= EncoderSwChangedTime + (DeBounceTime/2)){
+      // we can trust this value, so set the global if different
+      if (glbEncoderSw != (int)thisEncoderSw) {
+        //todo poss protect with spinlocks?
+        glbEncoderSw = (int)thisEncoderSw;
+        if (glbEncoderSw == 1){
+            //printf("Encoder Switch Pressed!\n");
+            uint32_t ResetCounter;
+            uint32_t InterruptStatus;
+            // Mute the output
+            gpio_put(XSMT_PIN,0);
+            // Save and disable interrupts
+            InterruptStatus = save_and_disable_interrupts();
+            for(ResetCounter = 0;ResetCounter <= BUF_LEN; ResetCounter +=4){
+                psram_write32(&psram_spi, ResetCounter,0x0);
+            }
+            glbDelay = targetDelay; //be done with it!
+            restore_interrupts(InterruptStatus);
+            // Un-Mute the output
+            gpio_put(XSMT_PIN,1);
+        } 
+      }
     }
-    glbDelay = targetDelay; //be done with it!
-    restore_interrupts(InterruptStatus);
-    // Un-Mute the output
-    gpio_put(XSMT_PIN,1);
   }
 }
+
 /**
  * @brief Main program entry point
  */
@@ -232,25 +263,17 @@ int main(){
     //  sleep_ms(1000);
     //}
     
-    // Onboard LED
+    // Onboard LED (just in case we use it)
     gpio_init(ONBOARD_LED);
     gpio_set_dir(ONBOARD_LED, GPIO_OUT);
-    // External LED
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
     // Setting gpio 23 high turns off power save mode
     // on the internal SMPS, and keeps it in PWM mode, 
     // which improves noise on the 3v3 rail. 
     gpio_init(POWERSAVE_PIN);
     gpio_set_dir(POWERSAVE_PIN,GPIO_OUT);
     gpio_put(POWERSAVE_PIN,1);
-    // Algorithm Pins
-    gpio_init(ALGORITHM_0);
-    gpio_set_dir(ALGORITHM_0,GPIO_IN);
-    //gpio_pull_down(ALGORITHM_0);
-    gpio_init(ALGORITHM_1);
-    gpio_set_dir(ALGORITHM_1,GPIO_IN);
-    //gpio_pull_down(ALGORITHM_1);
+
+
     // PCM 5102 soft mute
     gpio_init(XSMT_PIN);
     gpio_set_dir(XSMT_PIN,GPIO_OUT);
@@ -275,6 +298,9 @@ int main(){
     glbDelay = 0;
     ExtClockPeriod = 48000;
 
+    glbEncoderSw = 0;
+    LatestEncoderSw = 0;
+    EncoderSwChangedTime = time_us_64();
 
     /**
      * @brief Start the Audio I2S interface, which uses pio1

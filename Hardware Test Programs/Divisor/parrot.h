@@ -32,39 +32,40 @@ SOFTWARE.
 #define PARROT_H
 
 // GPIO Pin definitions
-static const uint ALGORITHM_0 = 0;              // LSB of Algorithm 4-Way BCD Switch Physical Pin 1
-static const uint ALGORITHM_1 = 1;              // MSB of Algorithm 4-Way BCD Switch Physical Pin 2
-static const uint DIVISOR_A = 2;                // 16-Way BCD switch-A    Physical Pin 4
-static const uint DIVISOR_B = 3;                // 16-Way BCD switch-B    Physical Pin 5
-static const uint DIVISOR_C = 4;                // 16-Way BCD switch-C    Physical Pin 6
-static const uint DIVISOR_D = 5;                // 16-Way BCD switch-D    Physical Pin 7
-static const uint I2S_DOUT = 6;                 // I2S Data Out
-static const uint I2S_DIN = 7;                  // I2S Data In
-static const uint I2S_BCK = 8;                  // I2S Bit Clock
-static const uint I2S_LRCK = 9;                 // I2S Left-Right Clock
-static const uint I2S_SCK = 10;                 // I2S System Clock
-static const uint LED_PIN = 11;                 // LED                   physical pin 15
-static const uint XSMT_PIN = 12;                // PCM5102 Soft-mute     Physical Pin 16 
-static const uint ENCODER_SW = 13;              // Rotary Encoder switch Physical pin 17
-static const uint ENCODERA_IN = 14;             // Rotary encoder A-leg  physical pin 20 
-static const uint ENCODERB_IN = 15;             // Rotary encoder B-leg  physical pin 21
-static const uint SPI_CS = 16;                  // SPI Chip Select
-static const uint SPI_SCK = 17;                 // SPI Serial Clock
-static const uint SPI_MOSI = 19;                // SPI Master Out Slave In
-static const uint SPI_MISO = 20;                // SPI Master In Slave Out
-static const uint SYNC_PIN = 20;                // Delay sync'd to clock physical pin 26
-static const uint CLOCK_OUT = 21;               // Internal clock out    physical pin 27
-static const uint CLOCK_IN = 22;                // External clock in     physical pin 29
+static const uint ALGORITHM_0 = 0;              // LSB of Algorithm 8-Way BCD Switch    Physical Pin 1
+static const uint ALGORITHM_1 = 1;              // MSB of Algorithm 8-Way BCD Switch    Physical Pin 2
+static const uint ALGORITHM_2 = 2;              // MSB of Algorithm 8-Way BCD Switch    Physical Pin 4
+static const uint DIVISOR_0 = 3;                // 8-Way BCD switch-A                   Physical Pin 5
+static const uint DIVISOR_1 = 4;                // 8-Way BCD switch-B                   Physical Pin 6
+static const uint DIVISOR_2 = 5;                // 8-Way BCD switch-C                   Physical Pin 7
+static const uint DIVISOR_3 = 6;                // Mul/Div switch provides 4th Bit      Physical Pin 9
+static const uint I2S_DOUT = 7;                 // I2S Data Out                         Physical Pin 10
+static const uint I2S_DIN = 8;                  // I2S Data In                          Physical Pin 11
+static const uint I2S_BCK = 9;                  // I2S Bit Clock                        Physical Pin 12
+static const uint I2S_LRCK = 10;                // I2S Left-Right Clock                 Physical Pin 14
+static const uint I2S_SCK = 11;                 // I2S System Clock                     Physical Pin 15
+static const uint XSMT_PIN = 12;                // PCM5102 Soft-mute                    Physical Pin 16 
+static const uint ENCODER_SW = 13;              // Rotary Encoder switch                Physical pin 17
+static const uint ENCODERA_IN = 14;             // Rotary encoder A-leg                 physical pin 19 
+static const uint ENCODERB_IN = 15;             // Rotary encoder B-leg                 physical pin 20
+static const uint SPI_CS=16;                    // Set in CMakeLists as PSRAM_PIN_CS    Physical Pin 21 
+static const uint SPI_SCK=17;                   // Set in CMakeLists as PSRAM_PIN_SCK   Physical Pin 22
+static const uint SPI_MOSI=18;                  // Set in CMakeLists as PSRAM_PIN_MOSI  Physical Pin 24
+static const uint SPI_MISO=19;                  // Set in CMakeLists as PSRAM_PIN_MISO  Physical Pin 25
+static const uint SYNC_FREE = 20;               // Delay sync'd to clock                Physical pin 26
+static const uint CLOCK_OUT = 21;               // Internal clock out                   Physical pin 27
+static const uint CLOCK_IN = 22;                // External clock in                    Physical pin 29
 static const uint POWERSAVE_PIN = 23;           // Set high turns on PWM mode the internal 3v3 regulator, which reduces noise 
 static const uint VBUS_SENSE = 24;              // High if VBUS is present, low otherwise
 static const uint ONBOARD_LED = 25;             // On-Board LED
-static const uint FEEDBACK_PIN = 26;            // feedback amount       physical pin 31 (ADC0 Input)
-static const uint CLOCKSPEED_PIN = 27;          // Clock Speed           physical pin 32 (ADC1 Input)
-static const uint WETDRY_PIN = 28;              // Wet/Dry control       physical pin 34 (ADC2 Input)
+static const uint FEEDBACK_PIN = 26;            // feedback amount                      Physical pin 31 (ADC0 Input)
+static const uint CLOCKSPEED_PIN = 27;          // Clock Speed                          Physical pin 32 (ADC1 Input)
+static const uint WETDRY_PIN = 28;              // Wet/Dry control                      Physical pin 34 (ADC2 Input)
 // ADC Channels
 static const uint ADC_feedback = 0;
 static const uint ADC_Clock = 1;
 static const uint ADC_WetDry = 2; 
+
 // AP 6404L Constants
 static const uint8_t AP6404_READ = 0x03;        // Read
 static const uint8_t AP6404_FREAD = 0x0B;       // Fast Read
@@ -81,9 +82,6 @@ extern double ClockPeriod;         // Internal Clock Period
 extern uint32_t ReadPointer; 
 extern uint32_t WritePointer;
 extern float glbFeedback;
-extern float glbDivisor;
-extern float divisors[];
-extern int Algorithm;
 
 // function prototypes - parrot_func.c
 

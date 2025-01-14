@@ -1,6 +1,6 @@
 /******************************************************************************
 
-parrot
+The Camberwell Parrot
 
 Copyright © 2024 Richard R. Goodwin / Audio Morphology Ltd.
 
@@ -48,7 +48,12 @@ double ClockBPM;                  // BPM Value for interal clock
 double ClockFreq;                 // Internal Clock Frequency
 double ClockPeriod;               // Internal Clock Period
 int ClockPhase;                   // Toggles between 0 & 1 
-int LEDPhase;
+int LEDPhase;                     // on-board LED - Toggles between 0 & 1 
+int LatestDivisor;                  // Temp value of the mul/div switch if it changes
+uint64_t DivisorChangedTime;        // Time at which the switch last changed value (for debouncing)
+int LatestAlgorithm = 0;            // latest value for the Algorithm Switch that may or may not be the same as glbAlgorithm
+uint64_t AlgorithmChangedTime;      // Time at which the Algorithm Switch changed
+
 _Atomic int32_t ExtClockPeriod;   // External Clock Period (rising edge to rising edge)
 _Atomic int32_t ExtClockTick;     // Records the last tick for the External Clock
 uint SyncFree;                    // Delay time is just controlled by Rotary Encoder, or sync'd to external/internal clock
@@ -165,7 +170,7 @@ void encoder_IRQ_handler(uint gpio,uint32_t events){
       // At very large increments it takes the glbDelay a long time to 
       // reach the target, so just bump it
       if (glbIncrement > 10000) glbDelay = targetDelay;
-      printf("Increment: %d, Target Delay: %d\n",glbIncrement, targetDelay);
+      // printf("Increment: %d, Target Delay: %d\n",glbIncrement, targetDelay);
     }
   }
 }
@@ -199,7 +204,6 @@ void clock_callback(uint gpio, uint32_t events){
       ExtClockPeriod = ExtClock_MA_Sum / ExtClock_MA_Len;
       LEDPhase = !LEDPhase;
       //printf("Led Phase: %d\n",LEDPhase);
-      gpio_put(LED_PIN,LEDPhase);
       gpio_put(ONBOARD_LED,LEDPhase);
     }
   }
@@ -304,27 +308,60 @@ void updateWetDry(){
       //printf("Raw: %d, Average = %d, Wet: %f, Dry: %f\n",WetDry_raw, WetDry_Average, glbWet, glbDry);
 }
 /**
- * @brief Check the state of the Algorithm pins - two pins generate
- * a 2-bit value, which is used to switch between the 4 different 
- * delay / reverb algorithms 
+ * @brief read the 3-Bit BCD value from the Algorithm switch
+ * 
+ * This implements a software de-bounce, which looks for any
+ * change to be stable for at least 200ms before deciding that
+ * it can be trusted
  */
 void updateAlgorithm(){
-  Algorithm = gpio_get(ALGORITHM_0);
-  Algorithm += gpio_get(ALGORITHM_1) * 2;
-  //printf("Algorithm: %d\n",Algorithm);
+  uint32_t thisAlgorithm = gpio_get_all();
+  thisAlgorithm &= 0x7;
+  if (thisAlgorithm > 7) thisAlgorithm = 7;
+  if ((int)thisAlgorithm != LatestAlgorithm) {
+    LatestAlgorithm = thisAlgorithm;
+    AlgorithmChangedTime = time_us_64();
+  } else {
+    if (time_us_64() >= AlgorithmChangedTime + DeBounceTime){
+      // we can trust this value, so set the global if different
+      if (glbAlgorithm != (int)thisAlgorithm) {
+        //todo poss protect with spinlocks?
+        glbAlgorithm = (int)thisAlgorithm;
+        //printf("Algorithm = %d\n",glbAlgorithm); 
+      }
+    }
+  }
 }
+
 /**
  * @brief read the 4-Bit BCD value from the Divisor switch, read
  * the appropriate Divisor (multiple of the clock period) and set
  * the global divisor value accordingly
+ * 
+ * This implements a software de-bounce, which looks for any
+ * change to be stable for at least 200ms before deciding that
+ * it can be trusted
  */
 void updateDivisor(){
-  uint32_t Divisor = gpio_get_all();
-  Divisor = Divisor >> 2;             // shift so that gpio2 is LSB
-  Divisor &= 0xf;
-  if (Divisor > 15) Divisor = 15;
-  glbDivisor = divisors[Divisor];
-  //printf("Divisor = %d, glbDivisor = %f\n",Divisor, glbDivisor); 
+  uint32_t thisDivisor = gpio_get_all();
+  thisDivisor = thisDivisor >> 3;             // shift so that gpio3 is LSB
+  thisDivisor &= 0xf;
+  if (thisDivisor > 15) thisDivisor = 15;
+  if ((int)thisDivisor != LatestDivisor) {
+    LatestDivisor = thisDivisor;
+    // note the time of the most recent change
+    DivisorChangedTime = time_us_64();
+  } else {
+    if (time_us_64() >= DivisorChangedTime + DeBounceTime){
+      // we can trust this value, so set the global if different
+      if (glbDivisor != (int)thisDivisor) {
+        //todo poss protect with spinlocks?
+        glbDivisor = (int)thisDivisor;
+        glbRatio = divisors[thisDivisor];
+        //printf("Divisor = %d, Ratio = %f\n",glbDivisor, glbRatio); 
+      }
+    }
+  }
 }
 
 /**
@@ -333,10 +370,10 @@ void updateDivisor(){
  * current state, and output a message if/when the state changes 
  */
 void updateSyncFree(){
-  int ThisSync = gpio_get(SYNC_PIN);
+  int ThisSync = gpio_get(SYNC_FREE);
   if (ThisSync != SyncFree){
     SyncFree = ThisSync;
-    printf("Sync / Free switch = %d\n",SyncFree);
+    //printf("Sync / Free switch = %d\n",SyncFree);
   } 
 }
 
@@ -351,15 +388,14 @@ void core1_entry(){
     // Clock out and In
     ClockPhase = 0;
     LEDPhase = 0;
-    ExtClockTick = time_us_32();
     glbDelay = 0;
     gpio_init(CLOCK_IN);
     gpio_set_dir(CLOCK_IN, GPIO_IN);
     gpio_init(CLOCK_OUT);
     gpio_set_dir(CLOCK_OUT, GPIO_OUT);
-    gpio_init(SYNC_PIN);
-    gpio_pull_up(SYNC_PIN);
-    gpio_set_dir(SYNC_PIN, GPIO_IN);
+    gpio_init(SYNC_FREE);
+    gpio_pull_up(SYNC_FREE);
+    gpio_set_dir(SYNC_FREE, GPIO_IN);
     SyncFree = 0;                   // Not sync'd to external clock until told otherwise
     //printf("Multicore Launch\n");
 
@@ -375,26 +411,39 @@ void core1_entry(){
     gpio_pull_up(ENCODER_SW);
     // 8-Way switch + mul/div toggle are
     // BCD-encoded into a 4-Bit number
-    gpio_init(DIVISOR_A);
-    gpio_set_dir(DIVISOR_A,GPIO_IN);
-    //gpio_pull_down(DIVISOR_A);
-    gpio_init(DIVISOR_B);
-    gpio_set_dir(DIVISOR_B,GPIO_IN);
-    //gpio_pull_down(DIVISOR_B);
-    gpio_init(DIVISOR_C);
-    gpio_set_dir(DIVISOR_C,GPIO_IN);
-    //gpio_pull_down(DIVISOR_C);
-    gpio_init(DIVISOR_D);
-    gpio_set_dir(DIVISOR_D,GPIO_IN);
-    //gpio_pull_down(DIVISOR_D);
+    gpio_init(DIVISOR_0);
+    gpio_set_dir(DIVISOR_0,GPIO_IN);
+    gpio_init(DIVISOR_1);
+    gpio_set_dir(DIVISOR_1,GPIO_IN);
+    gpio_init(DIVISOR_2);
+    gpio_set_dir(DIVISOR_2,GPIO_IN);
+    gpio_init(DIVISOR_3);
+    gpio_set_dir(DIVISOR_3,GPIO_IN);
+    gpio_pull_up(DIVISOR_3);    // Switched to ground, so use Pull UP
+    // 8-Way Algorithm switch is BCD-encoded
+    // into a 3-Bit number
+    gpio_init(ALGORITHM_0);
+    gpio_set_dir(ALGORITHM_0,GPIO_IN);
+    gpio_init(ALGORITHM_1);
+    gpio_set_dir(ALGORITHM_1,GPIO_IN);
+    gpio_init(ALGORITHM_2);
+    gpio_set_dir(ALGORITHM_2,GPIO_IN);
 
     ExtClockTick = time_us_32();
 
-    //Initialise the internal clock
+    //Initialise the internal clock to 60BPM
     ClockBPM = 60;
     ClockFreq = (ClockBPM/60)*2;
     ClockPeriod = 1000000/ClockFreq;
     alarm_in_us(ClockPeriod);
+
+    LatestDivisor = 0;
+    glbDivisor = 0;
+    glbRatio = 1.00;
+    DivisorChangedTime = time_us_64();
+    LatestAlgorithm = 0;
+    glbAlgorithm = 0;
+    AlgorithmChangedTime = time_us_64();
 
     //Initialise ADC Inputs
     adc_init();
@@ -450,7 +499,7 @@ void core1_entry(){
       updateFeedback();
       // check and adjust internal Clock speed
       updateClock();
-      // check and adjust the Wet/Dry
+      // check and adjust the Wet/Dry balance
       updateWetDry();
       // Check the Status of the Sync / Free switch
       updateSyncFree();
@@ -464,8 +513,8 @@ void core1_entry(){
           // Target Delay will actually be some multiple or sub-multiple of the
           // External Clock period (1*, 2* /2, /4 etc), according to the multiple selected  
           PreviousClockPeriod = ExtClockPeriod;
-          targetDelay = (uint32_t)((float)ExtClockPeriod / SampleLength) * glbDivisor;
-          //printf("Ext Clock Period %d, SampleLength %f, TargetDelay: %d, Divisor: %f\n", ExtClockPeriod, SampleLength,targetDelay, glbDivisor);
+          targetDelay = (uint32_t)((float)ExtClockPeriod / SampleLength) * glbRatio;
+          //printf("Ext Clock Period %d, SampleLength %f, TargetDelay: %d, Divisor: %f\n", ExtClockPeriod, SampleLength,targetDelay, glbRatio);
           if (targetDelay > BUF_LEN) targetDelay = BUF_LEN;
       }
     }

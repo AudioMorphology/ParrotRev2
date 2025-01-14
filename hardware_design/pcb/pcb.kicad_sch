@@ -3683,6 +3683,12 @@
 		(uuid "1e3ad488-4c47-4707-a59e-292a46e24edf")
 	)
 	(junction
+		(at 124.46 30.48)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "25a07da5-3818-41f0-89f9-61bd9728259a")
+	)
+	(junction
 		(at 138.43 90.17)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3705,6 +3711,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "78478eee-834f-4286-a1ca-adb7117bc69c")
+	)
+	(junction
+		(at 143.51 30.48)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "a45a7a6c-5d5c-484d-9849-85623939c0a0")
 	)
 	(junction
 		(at 121.92 30.48)
@@ -3931,6 +3943,16 @@
 			(type default)
 		)
 		(uuid "1f4d736a-4111-477f-b5a9-03160b4c70b7")
+	)
+	(wire
+		(pts
+			(xy 143.51 30.48) (xy 143.51 34.29)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2177527a-4b60-4145-940c-232226ca7166")
 	)
 	(wire
 		(pts
@@ -4234,13 +4256,23 @@
 	)
 	(wire
 		(pts
-			(xy 121.92 30.48) (xy 125.73 30.48)
+			(xy 121.92 30.48) (xy 124.46 30.48)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "4b7ec569-5718-442c-b094-ee57d5217864")
+	)
+	(wire
+		(pts
+			(xy 143.51 30.48) (xy 146.05 30.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "54762bc7-4293-45a0-8feb-ec8c25c6aa17")
 	)
 	(wire
 		(pts
@@ -4334,7 +4366,7 @@
 	)
 	(wire
 		(pts
-			(xy 140.97 30.48) (xy 146.05 30.48)
+			(xy 140.97 30.48) (xy 143.51 30.48)
 		)
 		(stroke
 			(width 0)
@@ -4481,6 +4513,16 @@
 			(type default)
 		)
 		(uuid "87545106-1428-4464-9c29-ebdfb5ad62e5")
+	)
+	(wire
+		(pts
+			(xy 124.46 30.48) (xy 125.73 30.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "875fdbf3-077d-4111-bd98-e28751490aff")
 	)
 	(wire
 		(pts
@@ -4841,6 +4883,16 @@
 			(type default)
 		)
 		(uuid "c617cf88-23f4-4b70-a908-a38fb1ff8146")
+	)
+	(wire
+		(pts
+			(xy 124.46 30.48) (xy 124.46 34.29)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c61b186e-f492-4c17-a69a-aff0a2e25336")
 	)
 	(wire
 		(pts
@@ -6243,6 +6295,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 143.51 41.91 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "11c7ab57-3472-4188-b397-d358033b3041")
+		(property "Reference" "#PWR036"
+			(at 143.51 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 143.51 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 143.51 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 143.51 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 143.51 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ce0b82dc-4099-4cb4-a40b-1b1aec4d12ec")
+		)
+		(instances
+			(project "pcb"
+				(path "/18f2dea7-9867-4ccd-afb4-0e0546e1832a"
+					(reference "#PWR036")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3.3V")
 		(at 245.11 69.85 0)
 		(unit 1)
@@ -6468,7 +6586,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_SMD:TO-252-2"
+		(property "Footprint" "DSP_CodecBoards:TO-252-2 with heatsink"
 			(at 133.985 34.29 0)
 			(effects
 				(font
@@ -7257,6 +7375,72 @@
 			(project "pcb"
 				(path "/18f2dea7-9867-4ccd-afb4-0e0546e1832a"
 					(reference "#PWR068")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 124.46 41.91 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "51f99337-9040-40dc-9998-438e9bd4a0eb")
+		(property "Reference" "#PWR034"
+			(at 124.46 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 124.46 46.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 124.46 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 124.46 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 124.46 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "8bfe2c57-0b1b-4e53-831a-ca72c7658aac")
+		)
+		(instances
+			(project "pcb"
+				(path "/18f2dea7-9867-4ccd-afb4-0e0546e1832a"
+					(reference "#PWR034")
 					(unit 1)
 				)
 			)
@@ -8474,6 +8658,76 @@
 		)
 	)
 	(symbol
+		(lib_id "Capacitor_AKL:C_0603")
+		(at 143.51 38.1 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "97436c98-b8fe-464a-b3f3-3bf97d76c715")
+		(property "Reference" "C5"
+			(at 147.32 36.8299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100n"
+			(at 147.32 39.3699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD_AKL:C_0603_1608Metric"
+			(at 144.4752 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 143.51 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "SMD 0603 MLCC capacitor, Alternate KiCad Library"
+			(at 143.51 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "f5aca31f-03bb-4334-ac4f-721628691917")
+		)
+		(pin "1"
+			(uuid "0ddd4c0c-0a25-4dfb-bcf2-d14369da6116")
+		)
+		(instances
+			(project ""
+				(path "/18f2dea7-9867-4ccd-afb4-0e0546e1832a"
+					(reference "C5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:VCC")
 		(at 67.31 25.4 0)
 		(unit 1)
@@ -8534,6 +8788,75 @@
 			(project "pcb"
 				(path "/18f2dea7-9867-4ccd-afb4-0e0546e1832a"
 					(reference "#PWR05")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Capacitor_AKL:C_0603")
+		(at 124.46 38.1 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "995ca018-ff65-41d5-a225-15b539f34db7")
+		(property "Reference" "C4"
+			(at 118.618 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "300n"
+			(at 116.586 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD_AKL:C_0603_1608Metric"
+			(at 125.4252 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 124.46 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "SMD 0603 MLCC capacitor, Alternate KiCad Library"
+			(at 124.46 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "6d1df8fc-c256-4925-9549-cb60b0bc58e8")
+		)
+		(pin "1"
+			(uuid "abe11023-c6a9-4ae1-84ef-7fbdd241e640")
+		)
+		(instances
+			(project ""
+				(path "/18f2dea7-9867-4ccd-afb4-0e0546e1832a"
+					(reference "C4")
 					(unit 1)
 				)
 			)
