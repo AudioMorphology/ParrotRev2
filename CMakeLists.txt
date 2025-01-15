@@ -1,3 +1,9 @@
+# The Camberwell Parrot. Audio Morphology 2024 
+#
+# CMakeLists File for building the .uf2
+# NOTE: Set the board type according to the 
+# model of RPi Pico
+
 # Set minimum required version of CMake.
 cmake_minimum_required(VERSION 3.13)
 
@@ -6,6 +12,16 @@ set(PICO_BOARD pico2)
 
 # Include build functions from Pico SDK
 include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
+
+# Pull in CMSIS-DSP specifically, as at Jan 2025 v1.16.2
+set(CMSISCORE "$ENV{PICO_SDK_PATH}/src/rp2_common/cmsis/stub/CMSIS/Core")
+set(DISABLEFLOAT16 ON)
+include(FetchContent)
+FetchContent_Declare(cmsisdsp
+   GIT_REPOSITORY https://github.com/ARM-software/CMSIS-DSP.git
+   GIT_TAG "v1.16.2"
+)
+FetchContent_MakeAvailable(cmsisdsp)
 
 # Set name of project (as PROJECT_NAME) and C/C   standards 
 project(parrot C CXX ASM)
@@ -39,7 +55,11 @@ pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/i2s/i2s.pio)
 
 # Create map/bin/hex/uf2 files
 pico_add_extra_outputs(${PROJECT_NAME})
-#pico_set_float_implementation(${PROJECT_NAME} NAME)
+# set to use the fast/compact SDK/bootrom floating point implementations
+pico_set_float_implementation(${PROJECT_NAME} pico)
+
+# Dependency to ensure that libCMSISDSP.a is built
+add_dependencies(${PROJECT_NAME} CMSISDSP)
 
 # Link to pico_stdlib (gpio, time, etc. functions)
 target_link_libraries(${PROJECT_NAME} 
@@ -53,6 +73,13 @@ target_link_libraries(${PROJECT_NAME}
     hardware_irq
     hardware_adc
     hardware_sync
+    ${cmsisdsp_BINARY_DIR}/Source/libCMSISDSP.a
+)
+
+# Add pico and cmsis include paths
+target_include_directories(${PROJECT_NAME}  PRIVATE
+  ${cmsisdsp_SOURCE_DIR}/Include
+  ${PICO_SDK_PATH}/src/rp2_common/cmsis/stub/CMSIS/Core/Include
 )
 
 # Enable usb output, disable uart output

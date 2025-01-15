@@ -41,6 +41,7 @@ SOFTWARE.
 #include "i2s/i2s.h"
 #include "psram_spi.h"
 #include "hardware/sync.h"
+#include "arm_math.h"
 
 uint32_t ReadPointer = 0;
 uint32_t WritePointer = 0;
@@ -101,7 +102,7 @@ int get_sign(int32_t value)
  * if necessary, different processing can be applied 
  * to each sample.
  * 
- * @param input pointer to the Audio Innput buffer
+ * @param input pointer to the Audio Input buffer
  * @param output pointer to the Audio Output buffer
  * @param num_frames number of L-R samples
  */
