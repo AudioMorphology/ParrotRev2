@@ -432,7 +432,7 @@
 			(uuid "80e3a56a-395a-4739-add2-34c82f721ed0")
 		)
 	)
-	(footprint "Eurorack:NPTH Mechanical 8.5x13"
+	(footprint "Eurorack:NPTH Mechanical 9x13"
 		(layer "F.Cu")
 		(uuid "40c3e2d6-aead-496c-beac-dd4846bada5a")
 		(at 43 74.8)
@@ -440,7 +440,7 @@
 			(at 0 -0.5 0)
 			(unlocked yes)
 			(layer "F.SilkS")
-			(uuid "11155c5c-fd18-4254-aa71-5e2ec59b13c9")
+			(uuid "8c9a6171-7837-4c89-8a84-c177827f9d70")
 			(effects
 				(font
 					(size 1 1)
@@ -448,11 +448,11 @@
 				)
 			)
 		)
-		(property "Value" "NPTH Mechanical 8.5x13"
+		(property "Value" "NPTH Mechanical 9x13"
 			(at 0 1 0)
 			(unlocked yes)
 			(layer "F.Fab")
-			(uuid "36b3aca5-d9d1-459d-9fb8-91deadac3ff6")
+			(uuid "c93d951d-c78e-4e42-9a14-f8d62f33862a")
 			(effects
 				(font
 					(size 1 1)
@@ -460,12 +460,12 @@
 				)
 			)
 		)
-		(property "Footprint" "Eurorack:NPTH Mechanical 8.5x13"
+		(property "Footprint" "Eurorack:NPTH Mechanical 9x13"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "b28a193f-a839-49af-bd5f-5f2038b7cd45")
+			(uuid "ef58d085-153e-4c4f-81ac-f302fd64b3ac")
 			(effects
 				(font
 					(size 1 1)
@@ -478,7 +478,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "39b01761-7345-4c35-a829-79f20ae46626")
+			(uuid "e5bd7461-a6e8-4d03-b259-5f4a09289d1e")
 			(effects
 				(font
 					(size 1 1)
@@ -491,7 +491,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "4ff12806-ee6e-413b-8fea-b02babae9362")
+			(uuid "c115ffc6-fe17-4417-865f-8fda42fd419d")
 			(effects
 				(font
 					(size 1 1)
@@ -504,7 +504,7 @@
 			(at 0 2.5 0)
 			(unlocked yes)
 			(layer "F.Fab")
-			(uuid "0341ed65-21c5-4e71-859f-4e1fcc05950a")
+			(uuid "148aa7a8-e8f9-45a2-88b3-4d05712b732d")
 			(effects
 				(font
 					(size 1 1)
@@ -515,9 +515,9 @@
 		(pad "" np_thru_hole circle
 			(at 0 0)
 			(size 13 13)
-			(drill 8.5)
+			(drill 9)
 			(layers "F.Cu" "F.Mask")
-			(uuid "14e640a9-5d9d-4f54-ae5b-a5cfcbe94748")
+			(uuid "fe9bace6-3344-49ef-9d0e-6d62922914ac")
 		)
 	)
 	(footprint "Eurorack:NPTH Mechanical 6.8x9"
@@ -873,7 +873,7 @@
 			(uuid "0a0ef1f0-98af-44b2-9373-96a2c312a62d")
 		)
 	)
-	(footprint "Eurorack:NPTH Mechanical 8.5x13"
+	(footprint "Eurorack:NPTH Mechanical 9x13"
 		(layer "F.Cu")
 		(uuid "817eece8-62cc-474f-9898-9ee17d2ab64d")
 		(at 75.6 74.8)
@@ -881,7 +881,7 @@
 			(at 0 -0.5 0)
 			(unlocked yes)
 			(layer "F.SilkS")
-			(uuid "e7318812-573f-4f02-9a12-382b49e1687a")
+			(uuid "04517777-3c35-4b6c-a3e2-21a5f6abea56")
 			(effects
 				(font
 					(size 1 1)
@@ -889,11 +889,11 @@
 				)
 			)
 		)
-		(property "Value" "NPTH Mechanical 8.5x13"
+		(property "Value" "NPTH Mechanical 9x13"
 			(at 0 1 0)
 			(unlocked yes)
 			(layer "F.Fab")
-			(uuid "e95f256b-e445-4886-81ea-c794d8b1fed9")
+			(uuid "7d5d9de7-d493-449d-809d-e3248b7bb7ee")
 			(effects
 				(font
 					(size 1 1)
@@ -901,12 +901,12 @@
 				)
 			)
 		)
-		(property "Footprint" "Eurorack:NPTH Mechanical 8.5x13"
+		(property "Footprint" "Eurorack:NPTH Mechanical 9x13"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "ff517c50-5c82-46f6-87ce-07c8a8bb1068")
+			(uuid "7d18f8a1-2353-4b09-936e-e777a9d77576")
 			(effects
 				(font
 					(size 1 1)
@@ -919,7 +919,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "3b192b24-16b0-473d-9683-e51a59963539")
+			(uuid "05f72bdd-dacb-4014-b2f8-c4c1b7d726f0")
 			(effects
 				(font
 					(size 1 1)
@@ -932,7 +932,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "3768a22e-b8bb-4d1d-b714-3ba2b59b4829")
+			(uuid "a8922e5c-5590-4778-84af-b54e10e90c3c")
 			(effects
 				(font
 					(size 1 1)
@@ -945,7 +945,7 @@
 			(at 0 2.5 0)
 			(unlocked yes)
 			(layer "F.Fab")
-			(uuid "688801e0-4c8c-4be1-b444-b436e9a09b68")
+			(uuid "ef26da88-2704-4c08-aa12-486d8bdf9875")
 			(effects
 				(font
 					(size 1 1)
@@ -956,9 +956,9 @@
 		(pad "" np_thru_hole circle
 			(at 0 0)
 			(size 13 13)
-			(drill 8.5)
+			(drill 9)
 			(layers "F.Cu" "F.Mask")
-			(uuid "1c9f14a0-2d1f-43b0-bd17-99025154ca06")
+			(uuid "98fd30a1-1ee5-40e8-97d8-132909bff140")
 		)
 	)
 	(footprint "Eurorack:NPTH Mechanical 6.2x9"
@@ -2833,7 +2833,7 @@
 		)
 	)
 	(gr_text "2"
-		(at 66.7 71.8 0)
+		(at 66.7 71.2 0)
 		(layer "F.Cu")
 		(uuid "68e74f13-edba-467b-9f41-a71abbfc83f5")
 		(effects
@@ -3143,7 +3143,7 @@
 		)
 	)
 	(gr_text "3"
-		(at 70.4 67.9 0)
+		(at 70.1 67.9 0)
 		(layer "F.Cu")
 		(uuid "9a753583-aab9-4f31-8933-7f3d92f10c0a")
 		(effects
@@ -3749,7 +3749,7 @@
 		)
 	)
 	(gr_text "3"
-		(at 70.4 67.9 0)
+		(at 70.1 67.9 0)
 		(layer "F.Mask")
 		(uuid "3b367f6f-d83f-4a5b-8dfd-df9f053c0822")
 		(effects
@@ -3762,7 +3762,7 @@
 		)
 	)
 	(gr_text "2"
-		(at 66.7 71.8 0)
+		(at 66.7 71.2 0)
 		(layer "F.Mask")
 		(uuid "42715384-c289-411c-9a6c-e0993dce06af")
 		(effects

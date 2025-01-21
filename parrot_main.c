@@ -82,6 +82,10 @@ psram_spi_inst_t* async_spi_inst;
 psram_spi_inst_t psram_spi;
 
 static __attribute__((aligned(8))) pio_i2s i2s;
+static float input_buffer[STEREO_BUFFER_SIZE * 2];
+static float output_buffer[STEREO_BUFFER_SIZE * 2];
+float *inbuffptr = &input_buffer[0];
+float *outbuffptr = &output_buffer[0];
 
 // Multi-tap delay element
 typedef struct tap_element{
@@ -108,6 +112,11 @@ int get_sign(int32_t value)
  */
 static void process_audio(const int32_t* input, int32_t* output, size_t num_frames) {
     /*
+    * Convert to Floats
+    */
+    for (size_t i = 0; i < num_frames * 2; i++){input_buffer[i] = (float)input[i];}
+    
+    /*
     *   Left Channel Sample
     */
     for (size_t i = 0; i < num_frames * 2; i++) {
@@ -126,16 +135,14 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
         // added to the incoming sample as Feedback
         union uSample ThisSample;
         union uSample DrySample;
-        ThisSample.fSample = (float)input[i];
+        ThisSample.fSample = input_buffer[i];
         DrySample.fSample = ThisSample.fSample;
         switch(glbAlgorithm){
             case 0:
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback));
                 break;
             case 1:
-                //ThisSample.fSample = WetDry(DrySample.fSample,Ping_Pong(ThisSample, glbFeedback, true));
-                //ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback));
-                ThisSample.fSample = WetDry(DrySample.fSample,single_delay(ThisSample));
+                ThisSample.fSample = WetDry(DrySample.fSample,Ping_Pong(ThisSample, glbFeedback, false));
                 break;
             case 2:
                 ThisSample.fSample = WetDry(DrySample.fSample,single_delay(ThisSample));
@@ -153,13 +160,13 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 ThisSample.fSample = single_delay(ThisSample);
                 break;
             case 7:
-                ThisSample.fSample = WaveWrapper(ThisSample.fSample,glbWet);
+                output_buffer[i] = input_buffer[i];
                 break;
             default:
                 ThisSample.fSample = single_tap(ThisSample, glbFeedback);
                 break;
         }
-        output[i] = (int32_t)ThisSample.fSample;
+        output_buffer[i] = ThisSample.fSample;
         ReadPointer+=4;
         if(ReadPointer >= BUF_LEN) ReadPointer = 0;
         WritePointer+=4;
@@ -168,16 +175,14 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
         *   Right Channel Sample
         */
         i++;
-        ThisSample.fSample = (float)input[i];
+        ThisSample.fSample = input_buffer[i];
         DrySample.fSample = ThisSample.fSample;
         switch(glbAlgorithm){
             case 0:
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback));
                 break;
             case 1:
-                //ThisSample.fSample = WetDry(DrySample.fSample,Ping_Pong(ThisSample, glbFeedback, true));
-                //ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback));
-                ThisSample.fSample = WetDry(DrySample.fSample,single_delay(ThisSample));
+                ThisSample.fSample = WetDry(DrySample.fSample,Ping_Pong(ThisSample, glbFeedback, true));
                 break;
             case 2:
                 ThisSample.fSample = WetDry(DrySample.fSample,single_delay(ThisSample));
@@ -195,18 +200,22 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 ThisSample.fSample = single_delay(ThisSample);
                 break;
             case 7:
-                ThisSample.fSample = WaveFolder(ThisSample.fSample,glbWet);
+                output_buffer[i] = input_buffer[i];
                 break;
             default:
                 ThisSample.fSample = single_tap(ThisSample, glbFeedback);
                 break;
         }
-        output[i] = (int32_t)ThisSample.fSample;
+        output_buffer[i] = ThisSample.fSample;
         ReadPointer+=4;
         if(ReadPointer >= BUF_LEN) ReadPointer = 0;
         WritePointer+=4;
         if(WritePointer >= BUF_LEN) WritePointer = 0;
     }
+    /*
+    * Convert back from floats
+    */
+    for (size_t i = 0; i < num_frames * 2; i++){output[i] = (int32_t)output_buffer[i];}
 }
 /**
  * @brief I2S Audio input DMA handler

@@ -131,9 +131,9 @@ float Ping_Pong(union uSample InSample, float gain, bool LeftRight){
     union uSample ReadSample;
     uint32_t localReadPointer = ReadPointer;
 
-    if(LeftRight){
+    if(LeftRight == true){
         // Right channel is delayed by half the glbDelay period
-        localReadPointer = ReadPointer + (glbDelay * 2);
+        localReadPointer = ReadPointer + (glbDelay * 1.5);
         if(localReadPointer > BUF_LEN){localReadPointer -= BUF_LEN;}
     }
 
