@@ -43,9 +43,16 @@ SOFTWARE.
 #include "hardware/sync.h"
 #include "arm_math.h"
 
-uint32_t ReadPointer = 0;
+// There are separate Read pointers for 
+// Left and Riht channels, though only one 
+// write pointer, as everythign is written to 
+// a single here-and-now position, but read
+// accoring to differing delays Left and Right
+uint32_t ReadPointer_L = 0;         
+uint32_t ReadPointer_R = 0;
 uint32_t WritePointer = 0;
-
+const float div = (1.0f/16777215.0f);
+const float mul = 16777215.0f;
 float glbWet = 0;                   // wet/dry multipliers                   
 float glbDry = 1;                   // Between 0 and 1
 float glbFeedback = 0.1;            // Global feedback level (between 0 and 1)
@@ -60,8 +67,10 @@ uint64_t DeBounceTime = 200000;     // Switch Debounce time in uS
 
 uint32_t encoder_tick = 0;
 
-uint32_t glbDelay;                  // The actual current Delay (in Samples)
-uint32_t targetDelay;               // The target Delay (in samples) - glbDelay will ramp towards this value
+uint32_t glbDelay_L;                // The actual current Delay (in Samples) Left Channel
+uint32_t glbDelay_R;                // The actual current Delay (in Samples) Right Channel
+uint32_t targetDelay_L;             // The target Delay (in samples) - glbDelay will ramp towards this value
+uint32_t targetDelay_R;             // The target Delay (in samples) - glbDelay will ramp towards this value
 int32_t PreviousClockPeriod = 0;    //
 uint32_t glbIncrement = 1;          // How many samples the delay is increased or decreased by via the rotary encoder
 int spinlock_num_glbDelay;          // used to store the number of the spinlock
@@ -112,9 +121,20 @@ int get_sign(int32_t value)
  */
 static void process_audio(const int32_t* input, int32_t* output, size_t num_frames) {
     /*
-    * Convert to Floats
+    * Convert to Floats and normalise to -1.0 - +1.0f
     */
-    for (size_t i = 0; i < num_frames * 2; i++){input_buffer[i] = (float)input[i];}
+    for (size_t i = 0; i < num_frames * 2; i++){
+        // Data is 24-Bit left-justified in 32-Bit word
+        // so right-shift to get 24-Bits
+        //uint32_t tmp = input[i] >> 8;
+        // Mask everything except lower 24-Bits
+        //tmp &= 0xFFFFFF;
+        // check the sign bit
+        //if (tmp & 0x800000){tmp |= ~0xFFFFFFF;}
+        // normalise to float (-1.0, +1.0)
+        //input_buffer[i] = (float)tmp / (float)(0x7FFFFF);
+        input_buffer[i] = (float)input[i] / (float)(0x7FFFFFFF);
+        }
     
     /*
     *   Left Channel Sample
@@ -122,15 +142,13 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
     for (size_t i = 0; i < num_frames * 2; i++) {
         // If the delay changes, gradually ramping the actual delay 
         // towards the target delay helps to reduce glitches. 
-        if (glbDelay < targetDelay){
-            glbDelay++;
-            ReadPointer = ((WritePointer  + BUF_LEN) - (glbDelay*4)) % BUF_LEN;
+        if (glbDelay_L < targetDelay_L){
+            glbDelay_L++;
         }
-        if (glbDelay > targetDelay){
-            glbDelay--;
-            ReadPointer = ((WritePointer  + BUF_LEN) - (glbDelay*4)) % BUF_LEN;
+        if (glbDelay_L > targetDelay_L){
+            glbDelay_L--;
         }
-        
+        ReadPointer_L = ((WritePointer + BUF_LEN) - glbDelay_L) % BUF_LEN;
         // We need to read from Memory first, so that an amount of that can
         // added to the incoming sample as Feedback
         union uSample ThisSample;
@@ -139,83 +157,105 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
         DrySample.fSample = ThisSample.fSample;
         switch(glbAlgorithm){
             case 0:
-                ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback));
-                break;
-            case 1:
-                ThisSample.fSample = WetDry(DrySample.fSample,Ping_Pong(ThisSample, glbFeedback, false));
-                break;
-            case 2:
-                ThisSample.fSample = WetDry(DrySample.fSample,single_delay(ThisSample));
-                break;
-            case 3:
-                ThisSample.fSample = single_delay(ThisSample);
-                break;
-            case 4:
-                ThisSample.fSample = single_delay(ThisSample);
-                break;
-            case 5:
-                ThisSample.fSample = single_delay(ThisSample);
-                break;
-            case 6:
-                ThisSample.fSample = single_delay(ThisSample);
-                break;
-            case 7:
-                output_buffer[i] = input_buffer[i];
-                break;
-            default:
-                ThisSample.fSample = single_tap(ThisSample, glbFeedback);
-                break;
-        }
-        output_buffer[i] = ThisSample.fSample;
-        ReadPointer+=4;
-        if(ReadPointer >= BUF_LEN) ReadPointer = 0;
-        WritePointer+=4;
-        if(WritePointer >= BUF_LEN) WritePointer = 0;
-        /*
-        *   Right Channel Sample
-        */
-        i++;
-        ThisSample.fSample = input_buffer[i];
-        DrySample.fSample = ThisSample.fSample;
-        switch(glbAlgorithm){
-            case 0:
-                ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback));
+                ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, true));
                 break;
             case 1:
                 ThisSample.fSample = WetDry(DrySample.fSample,Ping_Pong(ThisSample, glbFeedback, true));
                 break;
             case 2:
-                ThisSample.fSample = WetDry(DrySample.fSample,single_delay(ThisSample));
+                // BUT delay change only affects Left Channel
+                ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, true));
                 break;
             case 3:
-                ThisSample.fSample = single_delay(ThisSample);
+                // BUT delay change only affects Right Channel
+                ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, true));
                 break;
             case 4:
-                ThisSample.fSample = single_delay(ThisSample);
+                ThisSample.fSample = WetDry(DrySample.fSample,single_delay(ThisSample, true));
                 break;
             case 5:
-                ThisSample.fSample = single_delay(ThisSample);
+                ThisSample.fSample = single_delay(ThisSample, true);
                 break;
             case 6:
-                ThisSample.fSample = single_delay(ThisSample);
+                ThisSample.fSample = single_delay(ThisSample, true);
                 break;
             case 7:
+                //float tmp = input_buffer[i];
+                //if (tmp > 0.99f) tmp = 0.99f;
+                //if (tmp < -0.3f) tmp = -0.3f;
+                //output_buffer[i] = tmp; 
                 output_buffer[i] = input_buffer[i];
+                //output_buffer[i] = WaveFolder(input_buffer[i],glbWet);
                 break;
             default:
-                ThisSample.fSample = single_tap(ThisSample, glbFeedback);
+                ThisSample.fSample = single_tap(ThisSample, glbFeedback, true);
                 break;
         }
-        output_buffer[i] = ThisSample.fSample;
-        ReadPointer+=4;
-        if(ReadPointer >= BUF_LEN) ReadPointer = 0;
-        WritePointer+=4;
-        if(WritePointer >= BUF_LEN) WritePointer = 0;
+        //output_buffer[i] = ThisSample.fSample;
+        //ReadPointer_L = ReadPointer_L++ & BUF_LEN;
+        /*
+        *   Right Channel Sample
+        */
+        i++;
+        if (glbDelay_R < targetDelay_R){
+            glbDelay_R++;
+        }
+        if (glbDelay_R > targetDelay_R){
+            glbDelay_R--;
+        }
+        ReadPointer_R = ((WritePointer + BUF_LEN) - glbDelay_R) % BUF_LEN;
+        ThisSample.fSample = input_buffer[i];
+        DrySample.fSample = ThisSample.fSample;
+        switch(glbAlgorithm){
+            case 0:
+                ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, false));
+                break;
+            case 1:
+                ThisSample.fSample = WetDry(DrySample.fSample,Ping_Pong(ThisSample, glbFeedback, false));
+                break;
+            case 2:
+                // BUT delay change only affects Left Channel
+                ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, false));
+                break;
+            case 3:
+                // BUT delay change only affects Right Channel
+                ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, false));
+                break;
+            case 4:
+                ThisSample.fSample = WetDry(DrySample.fSample,single_delay(ThisSample, false));
+                break;
+            case 5:
+                ThisSample.fSample = single_delay(ThisSample, false);
+                break;
+            case 6:
+                ThisSample.fSample = single_delay(ThisSample, false);
+                break;
+            case 7:
+                //float tmp = input_buffer[i];
+                //if (tmp > 0.99f) tmp = 0.99f;
+                //if (tmp < -0.3f) tmp = -0.3f;
+                //output_buffer[i] = tmp; 
+                output_buffer[i] = input_buffer[i];
+                //output_buffer[i] = WaveFolder(input_buffer[i],glbWet);
+                break;
+            default:
+                ThisSample.fSample = single_tap(ThisSample, glbFeedback, false);
+                break;
+        }
+        //output_buffer[i] = ThisSample.fSample;
+        //ReadPointer_R = ReadPointer_R++ & BUF_LEN;
+        WritePointer++;
+        WritePointer &= BUF_LEN;
     }
     /*
     * Convert back from floats
     */
-    for (size_t i = 0; i < num_frames * 2; i++){output[i] = (int32_t)output_buffer[i];}
+    for (size_t i = 0; i < num_frames * 2; i++){
+        //int32_t tmp = (int32_t)(output_buffer[i] * 0x7FFFFF);
+        //output[i] = (int32_t)tmp << 8;
+        //output[i] = (int32_t)(output_buffer[i] * (0x7FFFFF));
+        output[i] = (int32_t)(output_buffer[i] * 0x7FFFFFFF);
+    }
 }
 /**
  * @brief I2S Audio input DMA handler
@@ -264,10 +304,12 @@ void checkReset(){
             gpio_put(XSMT_PIN,0);
             // Save and disable interrupts
             InterruptStatus = save_and_disable_interrupts();
-            for(ResetCounter = 0;ResetCounter <= BUF_LEN; ResetCounter +=4){
-                psram_write32(&psram_spi, ResetCounter,0x0);
+            for(ResetCounter = 0;ResetCounter < BUF_LEN; ResetCounter++){
+                psram_write32(&psram_spi, ResetCounter << 3,0x0);
+                psram_write32(&psram_spi, (ResetCounter << 3) + 4,0x0);
             }
-            glbDelay = targetDelay; //be done with it!
+            glbDelay_L = targetDelay_L; //be done with it!
+            glbDelay_R = targetDelay_R; //be done with it!
             restore_interrupts(InterruptStatus);
             // Un-Mute the output
             gpio_put(XSMT_PIN,1);
@@ -316,15 +358,19 @@ int main(){
     spinlock_num_glbDelay = spin_lock_claim_unused(true) ;
     spinlock_glbDelay = spin_lock_init(spinlock_num_glbDelay) ;
     // Zero out the Audio Buffer
-    for(WritePointer = 0;WritePointer <= BUF_LEN; WritePointer +=4){
-        psram_write32(&psram_spi, WritePointer,0x0);
+    for(WritePointer = 0;WritePointer < BUF_LEN; WritePointer++){
+        psram_write32(&psram_spi, WritePointer << 3,0x0);
+        psram_write32(&psram_spi, (WritePointer << 3)+4,0x0);
     }
     // Give the Write Pointer a head start & set the 
     // target delays
-    ReadPointer = 0;
+    ReadPointer_L = 0;
+    ReadPointer_R = 0;
     WritePointer = 0;
-    targetDelay = 0;
-    glbDelay = 0;
+    targetDelay_L = 0;
+    targetDelay_R = 0;
+    glbDelay_L = 0;
+    glbDelay_R = 0;
     ExtClockPeriod = 48000;
 
     glbEncoderSw = 0;

@@ -137,7 +137,9 @@ void encoder_IRQ_handler(uint gpio,uint32_t events){
       // Increment depends on the current increment value
       // TODO: probably play with these thresholds and
       // increments to arrive at something meaningful
-      switch(targetDelay){
+
+      // Left Channel
+      switch(targetDelay_L){
         case 0 ... 10:
           glbIncrement = 10;
         break;
@@ -162,16 +164,60 @@ void encoder_IRQ_handler(uint gpio,uint32_t events){
         default:
           glbIncrement = 48000;
       }
-      if (dir == 1){
-        if ((targetDelay+glbIncrement) < BUF_LEN) targetDelay += glbIncrement; else targetDelay = BUF_LEN;
-      }
-      else {
-        if (targetDelay > glbIncrement) targetDelay -= glbIncrement; else targetDelay = 1;
+      if (glbAlgorithm != 3){
+        // If Algorithm = 3, don't change Left channel
+        if (dir == 1){
+          if ((targetDelay_L+glbIncrement) < BUF_LEN) targetDelay_L += glbIncrement; else targetDelay_L = BUF_LEN;
+        }
+        else {
+          if (targetDelay_L > glbIncrement) targetDelay_L -= glbIncrement; else targetDelay_L = 1;
+        }
       }
       // At very large increments it takes the glbDelay a long time to 
       // reach the target, so just bump it
-      if (glbIncrement > 10000) glbDelay = targetDelay;
-      //printf("Increment: %d, Target Delay: %d\n",glbIncrement, targetDelay);
+      if (glbIncrement > 10000) glbDelay_L = targetDelay_L;
+      //printf("Increment: %d, Target Delay Left: %d\n",glbIncrement, targetDelay_L);
+
+      // Right Channel
+      switch(targetDelay_R){
+        case 0 ... 10:
+          glbIncrement = 10;
+        break;
+        case 11 ... 100:
+          glbIncrement = 10;
+        break;
+        case 101 ... 1000:
+          glbIncrement = 10;
+        break;
+        case 1001 ... 10000:
+          glbIncrement = 100;
+        break;
+        case 10001 ... 100000:
+          glbIncrement = 1000;
+        break;
+        case 100001 ... 1000000:
+          glbIncrement = 10000;
+        break;
+        case 1000001 ... 10000000:
+          glbIncrement = 100000;
+        break;
+        default:
+          glbIncrement = 48000;
+      }
+      if (glbAlgorithm != 2){
+        // If Algorithm = 2, DON'T change Right channel
+        if (dir == 1){
+          if ((targetDelay_R+glbIncrement) < BUF_LEN) targetDelay_R += glbIncrement; else targetDelay_R = BUF_LEN;
+        }
+        else {
+          if (targetDelay_R > glbIncrement) targetDelay_R -= glbIncrement; else targetDelay_R = 1;
+        }
+      }
+      // At very large increments it takes the glbDelay a long time to 
+      // reach the target, so just bump it
+      if (glbIncrement > 10000) glbDelay_R = targetDelay_R;
+      //printf("Increment: %d, Target Delay Right: %d\n",glbIncrement, targetDelay_R);
+
     }
   }
 }
@@ -388,7 +434,10 @@ void updateSyncFree(){
     // Sync'd to free running you shouldn't notice any 
     // change, but the actuall delat can be adjusted up  
     // or down from that point.
-    if (SyncFree == 0) targetDelay = glbDelay;
+    if (SyncFree == 0) {
+      targetDelay_L = glbDelay_L;
+      targetDelay_R = glbDelay_R;
+    }
     //printf("Sync / Free switch = %d\n",SyncFree);
   } 
 }
@@ -404,7 +453,8 @@ void core1_entry(){
     // Clock out and In
     ClockPhase = 0;
     LEDPhase = 0;
-    glbDelay = 0;
+    glbDelay_L = 0;
+    glbDelay_R = 0;
     gpio_init(CLOCK_IN);
     gpio_set_dir(CLOCK_IN, GPIO_IN);
     gpio_init(CLOCK_OUT);
@@ -529,9 +579,10 @@ void core1_entry(){
           // Target Delay will actually be some multiple or sub-multiple of the
           // External Clock period (1*, 2* /2, /4 etc), according to the multiple selected  
           PreviousClockPeriod = ExtClockPeriod;
-          targetDelay = (uint32_t)((float)ExtClockPeriod / SampleLength) * glbRatio;
+          targetDelay_L = (uint32_t)((float)ExtClockPeriod / SampleLength) * glbRatio;
           //printf("Ext Clock Period %d, SampleLength %f, TargetDelay: %d, Divisor: %f\n", ExtClockPeriod, SampleLength,targetDelay, glbRatio);
-          if (targetDelay > BUF_LEN) targetDelay = BUF_LEN;
+          if (targetDelay_L > BUF_LEN) targetDelay_L = BUF_LEN;
+          targetDelay_R = targetDelay_L;
       }
     }
 }

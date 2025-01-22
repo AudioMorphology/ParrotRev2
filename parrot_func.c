@@ -47,7 +47,7 @@ SOFTWARE.
  * mathematical fold to the output
  *  */
 float WaveFolder(float input, float gain){
-    float output = input * (1.0f + (gain * 2.0f));
+    float output = input * (1.0f + (gain * 3.0f));
     if (output > 1.0f) output = 2.0f - output;
     else if (output < -1.0f) output = -2.0f - output;
     return output;
@@ -93,13 +93,34 @@ float CubicAmplifier( float input )
  * by the Read Pointer
  * 
  * @param InSample Input Sample from Audio buffer
+ * @param IsLeft indicates left vs right channel
  */
-float single_delay(union uSample InSample){
+float single_delay(union uSample InSample, bool IsLeft){
     union uSample ReadSample;
-    ReadSample.iSample = psram_read32(&psram_spi, ReadPointer);
-    psram_write32(&psram_spi, WritePointer,InSample.iSample);
+    if (IsLeft == true) {
+        ReadSample.iSample = psram_read32(&psram_spi, ReadPointer_L << 3);
+        psram_write32(&psram_spi, WritePointer << 3,InSample.iSample);
+    } else {
+        ReadSample.iSample = psram_read32(&psram_spi, ReadPointer_R << 3);
+        psram_write32(&psram_spi, (WritePointer << 3) + 4,InSample.iSample);
+    }
     return ReadSample.fSample;
 }
+
+/**
+ * @brief allpass_filter 
+ * 
+ * Implements a simple allpass filter
+ * 
+ * @param InSample 
+ * @param delay in a whole number of samples
+ * @param gain in the range 0 .. 1
+ * @param IsLeft indicates whether we are processing Left or Right sample
+ */
+float allpass_filter(float InSample, uint32_t delay, float gain, bool IsLeft){
+    return 0.00;
+}
+
 
 /**
  * @brief Single-tap delay
@@ -110,13 +131,20 @@ float single_delay(union uSample InSample){
  * 
  * @param InSample Current Sample from the Audio Input buffer
  * @param gain feedback gain
+ * @param IsLeft indicates Left vs Right channel
  *  
  */
-float single_tap(union uSample InSample, float gain){
+float single_tap(union uSample InSample, float gain, bool IsLeft){
     union uSample ReadSample;
-    ReadSample.iSample = psram_read32(&psram_spi, ReadPointer);
-    InSample.fSample += ReadSample.fSample * gain;
-    psram_write32(&psram_spi, WritePointer,InSample.iSample);
+    if (IsLeft == true){
+        ReadSample.iSample = psram_read32(&psram_spi, ReadPointer_L << 3);
+        InSample.fSample += ReadSample.fSample * gain;
+        psram_write32(&psram_spi, WritePointer<<3,InSample.iSample);
+    } else {
+        ReadSample.iSample = psram_read32(&psram_spi, (ReadPointer_R << 3)+4);
+        InSample.fSample += ReadSample.fSample * gain;
+        psram_write32(&psram_spi, (WritePointer<<3)+4,InSample.iSample);
+    }
     return ReadSample.fSample;
 }
 
@@ -125,21 +153,24 @@ float single_tap(union uSample InSample, float gain){
  * 
  * @param InSample current input sample
  * @param gain feedback gain
- * @param LeftRight whether this is the Left or Right channel
+ * @param IsLeft whether this is the Left or Right channel
  */
-float Ping_Pong(union uSample InSample, float gain, bool LeftRight){
+float Ping_Pong(union uSample InSample, float gain, bool IsLeft){
     union uSample ReadSample;
-    uint32_t localReadPointer = ReadPointer;
 
-    if(LeftRight == true){
-        // Right channel is delayed by half the glbDelay period
-        localReadPointer = ReadPointer + (glbDelay * 1.5);
-        if(localReadPointer > BUF_LEN){localReadPointer -= BUF_LEN;}
+    if(IsLeft == true){
+        // Left channel is delayed by half the glbDelay period again
+        uint32_t localReadPtr = ReadPointer_L;
+        localReadPtr = (ReadPointer_L + (glbDelay_L >> 1)) & BUF_LEN;
+        ReadSample.iSample = psram_read32(&psram_spi, localReadPtr << 3);
+        InSample.fSample += ReadSample.fSample * gain;
+        psram_write32(&psram_spi, WritePointer << 3,InSample.iSample);
+    } else {
+        // Right Channel
+        ReadSample.iSample = psram_read32(&psram_spi, (ReadPointer_R << 3)+4);
+        InSample.fSample += ReadSample.fSample * gain;
+        psram_write32(&psram_spi, (WritePointer << 3)+4,InSample.iSample);
     }
-
-    ReadSample.iSample = psram_read32(&psram_spi, localReadPointer);
-    InSample.fSample += ReadSample.fSample * gain;
-    psram_write32(&psram_spi, WritePointer,InSample.iSample);
     return ReadSample.fSample;
 }
 

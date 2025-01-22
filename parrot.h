@@ -86,8 +86,9 @@ static const float WetDry_Scale = 0.02442;      // (= 100/4095)fixed scale facto
 static const float SampleLength = 1000000.0f/96000.0f; // Length of 1 stereo sample in uS (10.4166ms).  
 static const uint Feedback_MA_Len = 3;          // Length of the Feedback Moving Average ring buffer
 static const uint Tick_MA_Len = 1;              // Length of the Rotary Encoder tick speed Moving Average ring buffer
-static const uint32_t BUF_LEN = 0x7FFFFC;       // Actual Audio Buffer length in Mb = 8Mb. 
+//static const uint32_t BUF_LEN = 0x7FFFFC;       // Actual Audio Buffer length in Mb = 8Mb. 
 // GPIO Pin definitions
+static const uint32_t BUF_LEN = 0xFFFFF;        // PSRAM buffer length in L-R Sample pairs 
 static const uint ALGORITHM_0 = 0;              // LSB of Algorithm 8-Way BCD Switch    Physical Pin 1
 static const uint ALGORITHM_1 = 1;              // MSB of Algorithm 8-Way BCD Switch    Physical Pin 2
 static const uint ALGORITHM_2 = 2;              // MSB of Algorithm 8-Way BCD Switch    Physical Pin 4
@@ -126,7 +127,8 @@ static const uint ADC_WetDry = 2;
 extern double ClockBPM;            // BPM Value for interal clock
 extern double ClockFreq;           // Internal Clock Frequency
 extern double ClockPeriod;         // Internal Clock Period
-extern uint32_t ReadPointer; 
+extern uint32_t ReadPointer_L; 
+extern uint32_t ReadPointer_R; 
 extern uint32_t WritePointer;
 extern float glbFeedback;
 extern float glbRatio;
@@ -138,8 +140,10 @@ extern uint64_t DeBounceTime;
 //  Global variables defined in parrot_core1.c
 extern _Atomic int32_t ExtClockPeriod;     // External Clock Period (rising edge to rising edge)
 extern _Atomic int32_t ExtClockTick;       // Records the last tick for the External Clock
-extern uint32_t glbDelay;
-extern uint32_t targetDelay;
+extern uint32_t glbDelay_L;
+extern uint32_t glbDelay_R;
+extern uint32_t targetDelay_L;
+extern uint32_t targetDelay_R;
 extern int32_t PreviousClockPeriod;
 extern uint32_t glbIncrement;
 extern int32_t DelayDiff;
@@ -158,8 +162,8 @@ void core1_entry(void);
 float WaveFolder(float, float);
 float WaveWrapper(float, float);
 extern psram_spi_inst_t psram_spi;
-float single_delay(union uSample);
-float single_tap(union uSample, float);
+float single_delay(union uSample, bool);
+float single_tap(union uSample, float, bool);
 float Ping_Pong(union uSample, float, bool);
 int32_t single_tap_shift(int32_t, uint32_t, uint8_t);
 /**
