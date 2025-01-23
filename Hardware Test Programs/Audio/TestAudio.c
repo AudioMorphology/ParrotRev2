@@ -38,20 +38,93 @@ SOFTWARE.
 #include "hardware/clocks.h"
 #include "i2s/i2s.h"
 
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  ((byte) & 0x80000000 ? '1' : '0'), \
+  ((byte) & 0x40000000 ? '1' : '0'), \
+  ((byte) & 0x20000000 ? '1' : '0'), \
+  ((byte) & 0x10000000 ? '1' : '0'), \
+  ((byte) & 0x8000000 ? '1' : '0'), \
+  ((byte) & 0x4000000 ? '1' : '0'), \
+  ((byte) & 0x2000000 ? '1' : '0'), \
+  ((byte) & 0x1000000 ? '1' : '0'), \
+  ((byte) & 0x800000 ? '1' : '0'), \
+  ((byte) & 0x400000 ? '1' : '0'), \
+  ((byte) & 0x200000 ? '1' : '0'), \
+  ((byte) & 0x100000 ? '1' : '0'), \
+  ((byte) & 0x80000 ? '1' : '0'), \
+  ((byte) & 0x40000 ? '1' : '0'), \
+  ((byte) & 0x20000 ? '1' : '0'), \
+  ((byte) & 0x10000 ? '1' : '0'), \
+  ((byte) & 0x8000 ? '1' : '0'), \
+  ((byte) & 0x4000 ? '1' : '0'), \
+  ((byte) & 0x2000 ? '1' : '0'), \
+  ((byte) & 0x1000 ? '1' : '0'), \
+  ((byte) & 0x800 ? '1' : '0'), \
+  ((byte) & 0x400 ? '1' : '0'), \
+  ((byte) & 0x200 ? '1' : '0'), \
+  ((byte) & 0x100 ? '1' : '0'), \
+  ((byte) & 0x80 ? '1' : '0'), \
+  ((byte) & 0x40 ? '1' : '0'), \
+  ((byte) & 0x20 ? '1' : '0'), \
+  ((byte) & 0x10 ? '1' : '0'), \
+  ((byte) & 0x08 ? '1' : '0'), \
+  ((byte) & 0x04 ? '1' : '0'), \
+  ((byte) & 0x02 ? '1' : '0'), \
+  ((byte) & 0x01 ? '1' : '0') 
+
+static float input_buffer[STEREO_BUFFER_SIZE * 2];
+static float output_buffer[STEREO_BUFFER_SIZE * 2];
+float *inbuffptr = &input_buffer[0];
+float *outbuffptr = &output_buffer[0];
+uint32_t PrevTime;
 
 static __attribute__((aligned(8))) pio_i2s i2s;
 
 /**
  * @brief process a buffer of Audio data
  * 
- * For testing just copy the input buffer to the output
+ * For testing just copy the input buffer to the output, though
+ * this does go through the float conversion and back again
  */
 static void process_audio(const int32_t* input, int32_t* output, size_t num_frames) {
-    // Just copy the input to the output
+    /*
+    * Convert to Floats and normalise to -1.0 - +1.0f
+    */
+    for (size_t i = 0; i < num_frames * 2; i++){
+        input_buffer[i] = (float)input[i] / (float)(0x7FFFFFFF);
+        }
+    
+    /*
+    *   Just Copy input to output
+    */
     for (size_t i = 0; i < num_frames * 2; i++) {
-        output[i] = input[i];
+        output_buffer[i] = input_buffer[i];
+    }
+    /*
+    * Randomly sample and output something from the buffer
+    * every 500ms
+    */
+    uint32_t ThisTime = time_us_32();
+    if (ThisTime - PrevTime > 500000) {
+        PrevTime = ThisTime;
+        int32_t tmp = (input[8] >> 8);
+        //float ftmp = (float)tmp / (float)0x07FFFFF;
+        float ftmp = (float)(input[8] >> 8) / (float)0x07FFFFF;
+        int32_t outtmp = (int32_t)(ftmp * 0x07FFFFF) << 8;
+        printf(BYTE_TO_BINARY_PATTERN", %f, "BYTE_TO_BINARY_PATTERN"\n" ,BYTE_TO_BINARY(tmp), ftmp, BYTE_TO_BINARY(outtmp));
+    }
+    /*
+    * Convert back from floats
+    */
+    for (size_t i = 0; i < num_frames * 2; i++){
+        //int32_t tmp = (int32_t)(output_buffer[i] * 0x7FFFFF);
+        //output[i] = (int32_t)tmp << 8;
+        //output[i] = (int32_t)(output_buffer[i] * (0x7FFFFF));
+        output[i] = (int32_t)(output_buffer[i] * 0x7FFFFFFF);
     }
 }
+
 
 /**
  * @brief I2S Audio input DMA handler
@@ -94,6 +167,10 @@ int main(){
     printf("* if succcessful, all that will happen is that   *\n");
     printf("* audio presented to the input ADC will be copied*\n");
     printf("* verbatim to the putput DAC                     *\n");
+    printf("* for testing purposes this samples the input    *\n");
+    printf("* signal every 500ms and prints out a binary     *\n");
+    printf("* representation of what's arrived, whiich is a  *\n");
+    printf("* handy way of checking signed float conversions!*\n");
     printf("**************************************************\n");
     sleep_ms(1000);    
     for(int i=0;i<20;i++){
@@ -115,7 +192,7 @@ int main(){
     i2s_program_start_synched(pio1, &i2s_config_default, dma_i2s_in_handler, &i2s);
     // Un-mute the output
     gpio_put(XSMT_PIN,1);
-
+    PrevTime = time_us_32();
     // Do nothing for now, but we need to utilise this core
     // to do something useful
     while(1){

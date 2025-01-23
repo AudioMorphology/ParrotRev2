@@ -125,15 +125,9 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
     */
     for (size_t i = 0; i < num_frames * 2; i++){
         // Data is 24-Bit left-justified in 32-Bit word
-        // so right-shift to get 24-Bits
-        //uint32_t tmp = input[i] >> 8;
-        // Mask everything except lower 24-Bits
-        //tmp &= 0xFFFFFF;
-        // check the sign bit
-        //if (tmp & 0x800000){tmp |= ~0xFFFFFFF;}
-        // normalise to float (-1.0, +1.0)
-        //input_buffer[i] = (float)tmp / (float)(0x7FFFFF);
-        input_buffer[i] = (float)input[i] / (float)(0x7FFFFFFF);
+        // so right-shift to get 24-Bits, which sign-extends
+        // bit 31 down to bit 23 then normalise to float (-1.0, +1.0)
+        input_buffer[i] = (float)(input[i] >> 8) / (float)0x07FFFFF;
         }
     
     /*
@@ -248,13 +242,12 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
         WritePointer &= BUF_LEN;
     }
     /*
-    * Convert back from floats
+    * Convert back from floats to signed 32-Bit Ints
     */
     for (size_t i = 0; i < num_frames * 2; i++){
-        //int32_t tmp = (int32_t)(output_buffer[i] * 0x7FFFFF);
-        //output[i] = (int32_t)tmp << 8;
-        //output[i] = (int32_t)(output_buffer[i] * (0x7FFFFF));
-        output[i] = (int32_t)(output_buffer[i] * 0x7FFFFFFF);
+        // convert back to 24-Bit signed Integer
+        // left-justified in 32-bit integer 
+        output[i] = (int32_t)(output_buffer[i] * 0x07FFFFF) << 8;
     }
 }
 /**
