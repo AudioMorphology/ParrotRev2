@@ -42,6 +42,8 @@ SOFTWARE.
 #include "psram_spi.h"
 #include "hardware/sync.h"
 #include "arm_math.h"
+#include "gverb/include/gverbdsp.h"
+#include "gverb/include/gverb.h"
 
 // There are separate Read pointers for 
 // Left and Riht channels, though only one 
@@ -51,8 +53,14 @@ SOFTWARE.
 uint32_t ReadPointer_L = 0;         
 uint32_t ReadPointer_R = 0;
 uint32_t WritePointer = 0;
-const float div = (1.0f/16777215.0f);
-const float mul = 16777215.0f;
+float glbAllPassState = 0.0f;       // holds the previous value
+float glbAPPO_L1 = 0.0f;            // AllPass filter 1 previous output (Left)
+float glbAPPO_L2 = 0.0f;            // AllPass filter 1 previous output (Left)
+float glbAPPO_L3 = 0.0f;            // AllPass filter 1 previous output (Left)
+float glbAPPO_R1 = 0.0f;            // AllPass filter 1 previous output (Right)
+float glbAPPO_R2 = 0.0f;            // AllPass filter 1 previous output (Right)
+float glbAPPO_R3 = 0.0f;            // AllPass filter 1 previous output (Right)
+
 float glbWet = 0;                   // wet/dry multipliers                   
 float glbDry = 1;                   // Between 0 and 1
 float glbFeedback = 0.1;            // Global feedback level (between 0 and 1)
@@ -75,6 +83,7 @@ int32_t PreviousClockPeriod = 0;    //
 uint32_t glbIncrement = 1;          // How many samples the delay is increased or decreased by via the rotary encoder
 int spinlock_num_glbDelay;          // used to store the number of the spinlock
 spin_lock_t *spinlock_glbDelay;     // Used to lock access to glbDelay
+ty_gverb * parrot_gverb;
 
 /**
  * @brief An array of multipliers, which are applied to the master internal
@@ -134,6 +143,7 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
     *   Left Channel Sample
     */
     for (size_t i = 0; i < num_frames * 2; i++) {
+        float x,yl,yr;
         // If the delay changes, gradually ramping the actual delay 
         // towards the target delay helps to reduce glitches. 
         if (glbDelay_L < targetDelay_L){
@@ -165,13 +175,15 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, true));
                 break;
             case 4:
-                ThisSample.fSample = WetDry(DrySample.fSample,single_delay(ThisSample, true));
                 break;
             case 5:
                 ThisSample.fSample = single_delay(ThisSample, true);
                 break;
             case 6:
-                ThisSample.fSample = single_delay(ThisSample, true);
+                // G = Gverb!!
+                x = input_buffer[i];
+                gverb_do(parrot_gverb,x,&yl,&yr);
+                ThisSample.fSample = WetDry(x,yl);
                 break;
             case 7:
                 //float tmp = input_buffer[i];
@@ -185,7 +197,7 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 ThisSample.fSample = single_tap(ThisSample, glbFeedback, true);
                 break;
         }
-        //output_buffer[i] = ThisSample.fSample;
+        output_buffer[i] = ThisSample.fSample;
         //ReadPointer_L = ReadPointer_L++ & BUF_LEN;
         /*
         *   Right Channel Sample
@@ -216,13 +228,14 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, false));
                 break;
             case 4:
-                ThisSample.fSample = WetDry(DrySample.fSample,single_delay(ThisSample, false));
                 break;
             case 5:
                 ThisSample.fSample = single_delay(ThisSample, false);
                 break;
             case 6:
-                ThisSample.fSample = single_delay(ThisSample, false);
+                // G = Gverb!
+                // yr was calculated in Left Channel, so is just output here
+                ThisSample.fSample = WetDry(x,yr);
                 break;
             case 7:
                 //float tmp = input_buffer[i];
@@ -236,7 +249,7 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 ThisSample.fSample = single_tap(ThisSample, glbFeedback, false);
                 break;
         }
-        //output_buffer[i] = ThisSample.fSample;
+        output_buffer[i] = ThisSample.fSample;
         //ReadPointer_R = ReadPointer_R++ & BUF_LEN;
         WritePointer++;
         WritePointer &= BUF_LEN;
@@ -369,6 +382,19 @@ int main(){
     glbEncoderSw = 0;
     LatestEncoderSw = 0;
     EncoderSwChangedTime = time_us_64();
+    /**
+     * @brief instantiate a gverb instance
+     * @param int srate, 
+     * @param float maxroomsize, 
+     * @param float roomsize,
+	 * @param float revtime,
+	 * @param float damping, 
+     * @param float spread,
+	 * @param float inputbandwidth, 
+     * @param float earlylevel,
+	 * @param float taillevel
+     */
+    parrot_gverb = gverb_new(48000.f, 41.f, 40.f, 7.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f);
 
     /**
      * @brief Start the Audio I2S interface, which uses pio1

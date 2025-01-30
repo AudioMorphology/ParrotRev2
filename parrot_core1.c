@@ -34,7 +34,7 @@ SOFTWARE.
  * and acted upon by the time-critical functions in parrot_main
  */
 #include <stdio.h>
-#include <math.h>
+#include <arm_math.h>
 #include "parrot.h"
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
@@ -311,6 +311,8 @@ void updateFeedback(){
       // TODO: Check these thresholds!!
       if (glbFeedback > 0.97) glbFeedback = 1.0;
       if (glbFeedback < 0.01) glbFeedback = 0.0;
+      // use this value to update the gverb -> reverbtime (scale of 0 to 10?)
+      gverb_set_revtime(parrot_gverb, glbFeedback * 10.0f);
       //printf("Raw: %d, Average = %d, Feedback: %f\n",Feedback_raw, Feedback_Average, glbFeedback);
 }
 /**

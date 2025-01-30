@@ -31,6 +31,7 @@ SOFTWARE.
 #ifndef PARROT_H
 #define PARROT_H
 #include "psram_spi.h"
+#include "gverb/include/gverb.h"
 
 // External Clock input interrupt
 #define ALARM_NUM 0
@@ -74,6 +75,12 @@ union uSample {
     float fSample;
     int32_t iSample;
 };
+
+// AllPass filter structure
+typedef struct {
+    float a1; // Coefficient for the filter
+    float z1; // Previous input value
+} AllPassFilter;
 
 // Global Variables - Constants
 static const double ClockScale = 0.04884;       // (= (240-40)/4095) scales the internal clock BPM from 40 to 240BPM
@@ -124,6 +131,7 @@ static const uint ADC_Clock = 1;
 static const uint ADC_WetDry = 2; 
 
 // Global Variables defined in parrot_main.c
+extern float AllPassState;
 extern double ClockBPM;            // BPM Value for interal clock
 extern double ClockFreq;           // Internal Clock Frequency
 extern double ClockPeriod;         // Internal Clock Period
@@ -136,6 +144,7 @@ extern int glbDivisor;
 extern float divisors[];
 extern int glbAlgorithm;
 extern uint64_t DeBounceTime;
+extern ty_gverb * parrot_gverb;
 
 //  Global variables defined in parrot_core1.c
 extern _Atomic int32_t ExtClockPeriod;     // External Clock Period (rising edge to rising edge)

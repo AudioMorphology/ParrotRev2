@@ -37,6 +37,8 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/rp2040-psram)
 add_executable(${PROJECT_NAME} 
     parrot_main.c
     parrot_core1.c
+    ${CMAKE_CURRENT_LIST_DIR}/gverb/gverb.c
+    ${CMAKE_CURRENT_LIST_DIR}/gverb/gverbdsp.c
     ${CMAKE_CURRENT_LIST_DIR}/i2s/i2s.c
     parrot_func.c
 )

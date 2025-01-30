@@ -31,7 +31,7 @@ SOFTWARE.
 #include <stdio.h>
 #include "parrot.h"
 #include "psram_spi.h"
-#include <math.h>
+#include <arm_math.h>
 
 #include "pico/float.h"
 #define SHIFT_AMOUNT 8
@@ -118,8 +118,23 @@ float single_delay(union uSample InSample, bool IsLeft){
  * @param IsLeft indicates whether we are processing Left or Right sample
  */
 float allpass_filter(float InSample, uint32_t delay, float gain, bool IsLeft){
-    return 0.00;
+    float fRetVal = AllPassState + gain *InSample;
+    AllPassState = InSample - gain * fRetVal;
+    return fRetVal;
 }
+
+void initAllPassFilter(AllPassFilter *filter, float coefficient) {
+    filter->a1 = coefficient;
+    filter->z1 = 0.0;
+}
+
+float processAllPassFilter(AllPassFilter *filter, float input) {
+    float output = filter->a1 * (input - filter->z1) + filter->z1;
+    filter->z1 = output + input * filter->a1;
+    return output;
+}
+
+
 
 
 /**

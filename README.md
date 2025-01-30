@@ -17,6 +17,11 @@ time of 1,048,576 / 48,000 = 21.84 seconds
 The ADC and DAC ICs communicate over the i2S protocol, which is handled by custom PIO
 functions.
 
+They are actually 24-Bit devices with the data being transmitted left-justified in 32-Bit 
+frames, so I am rightshifting to get 24-Bit Integers, then converting these to normalised
+floats in the range -1.0 to +1.0 then, after processing it does the same in reverse before 
+sending the audio data out to the DAC. 
+
 Reading and writing to the PSRAM buffer is double-buffered using DMA calls from the I2S
 interface.
 
@@ -38,12 +43,12 @@ This code incorporates and acknowledges the following:
 rp2040-psram is a header-only library, which implements the SPI protocol using the rp2040 PIO
 rather than the in-built SPI interface. This gives far better performance for PSRAM SPI peripherals
 
-### i2s Copyright (c) 2022 Daniel Collins
+### i2s Copyright © 2022 Daniel Collins
 
 These functions implement the I2S protocol using the rp2040 PIO. and utilise interrupt-driven
 DMA double-buffering for Audio I/O.
 
-### Elements of hardware design Copyright 2012 Emilie Gillet (emilie.o.gillet@gmail.com)
+### Elements of hardware design Copyright © 2012 Emilie Gillet (emilie.o.gillet@gmail.com)
 
 The input and output buffer circuitry was taken directly from Clouds:
 https://github.com/pichenettes/eurorack/tree/master/clouds/hardware_design/pcb 
