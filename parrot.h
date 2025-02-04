@@ -31,6 +31,7 @@ SOFTWARE.
 #ifndef PARROT_H
 #define PARROT_H
 #include "psram_spi.h"
+#include "freeverb/freeverb.h"
 #include "gverb/include/gverb.h"
 
 // External Clock input interrupt
@@ -145,6 +146,7 @@ extern float divisors[];
 extern int glbAlgorithm;
 extern uint64_t DeBounceTime;
 extern ty_gverb * parrot_gverb;
+//extern fv_Context parrot_freeverb;
 
 //  Global variables defined in parrot_core1.c
 extern _Atomic int32_t ExtClockPeriod;     // External Clock Period (rising edge to rising edge)

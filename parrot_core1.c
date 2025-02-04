@@ -370,7 +370,7 @@ void updateWetDry(){
  */
 void updateAlgorithm(){
   uint32_t thisAlgorithm = gpio_get_all();
-  thisAlgorithm &= 0x7;
+  thisAlgorithm &= 0x7;  
   if (thisAlgorithm > 7) thisAlgorithm = 7;
   if ((int)thisAlgorithm != LatestAlgorithm) {
     LatestAlgorithm = thisAlgorithm;
@@ -465,7 +465,6 @@ void core1_entry(){
     gpio_pull_up(SYNC_FREE);
     gpio_set_dir(SYNC_FREE, GPIO_IN);
     SyncFree = 0;                   // Not sync'd to external clock until told otherwise
-    //printf("Multicore Launch\n");
 
     // Rotary Encoder
     gpio_init(ENCODERA_IN);
@@ -504,7 +503,6 @@ void core1_entry(){
     ClockFreq = (ClockBPM/60)*2;
     ClockPeriod = 1000000/ClockFreq;
     alarm_in_us(ClockPeriod);
-
     LatestDivisor = 0;
     glbDivisor = 0;
     glbRatio = 1.00;
@@ -518,7 +516,6 @@ void core1_entry(){
     adc_gpio_init(FEEDBACK_PIN);    //ADC 0
     adc_gpio_init(CLOCKSPEED_PIN);  //ADC 1
     adc_gpio_init(WETDRY_PIN);      //ADC 2
-
     // Prep the Feedback Moving Average buffer
     for(Feedback_MA_Ptr=0;Feedback_MA_Ptr <= Feedback_MA_Len;Feedback_MA_Ptr++){
       Feedback_MA[Feedback_MA_Ptr] = 0;
@@ -560,7 +557,6 @@ void core1_entry(){
     // calls based upon which GPIO triggered the interrupt 
     gpio_set_irq_enabled(ENCODERA_IN,GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE,1);
     gpio_set_irq_enabled(ENCODERB_IN,GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE,1);
-
     // Main Loop
     while(1){
       // Update the feedback amount

@@ -42,6 +42,8 @@ SOFTWARE.
 #include "psram_spi.h"
 #include "hardware/sync.h"
 #include "arm_math.h"
+//#include "pverb/pverb.h"
+#include "freeverb/freeverb.h"
 #include "gverb/include/gverbdsp.h"
 #include "gverb/include/gverb.h"
 
@@ -84,6 +86,8 @@ uint32_t glbIncrement = 1;          // How many samples the delay is increased o
 int spinlock_num_glbDelay;          // used to store the number of the spinlock
 spin_lock_t *spinlock_glbDelay;     // Used to lock access to glbDelay
 ty_gverb * parrot_gverb;
+fv_Context parrot_freeverb;
+//pv_Context parrot_pverb;
 
 /**
  * @brief An array of multipliers, which are applied to the master internal
@@ -104,6 +108,7 @@ static float input_buffer[STEREO_BUFFER_SIZE * 2];
 static float output_buffer[STEREO_BUFFER_SIZE * 2];
 float *inbuffptr = &input_buffer[0];
 float *outbuffptr = &output_buffer[0];
+static float freeverb_buffer[10];
 
 // Multi-tap delay element
 typedef struct tap_element{
@@ -129,6 +134,8 @@ int get_sign(int32_t value)
  * @param num_frames number of L-R samples
  */
 static void process_audio(const int32_t* input, int32_t* output, size_t num_frames) {
+    size_t tmpIndex;
+    int tmpAlgorithm = glbAlgorithm;    //saving it locally prevents it being changed during buffer processing 
     /*
     * Convert to Floats and normalise to -1.0 - +1.0f
     */
@@ -159,31 +166,39 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
         union uSample DrySample;
         ThisSample.fSample = input_buffer[i];
         DrySample.fSample = ThisSample.fSample;
-        switch(glbAlgorithm){
+        switch(tmpAlgorithm){
             case 0:
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, true));
+                output_buffer[i] = ThisSample.fSample;
                 break;
             case 1:
                 ThisSample.fSample = WetDry(DrySample.fSample,Ping_Pong(ThisSample, glbFeedback, true));
+                output_buffer[i] = ThisSample.fSample;
                 break;
             case 2:
                 // BUT delay change only affects Left Channel
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, true));
+                output_buffer[i] = ThisSample.fSample;
                 break;
             case 3:
                 // BUT delay change only affects Right Channel
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, true));
+                output_buffer[i] = ThisSample.fSample;
                 break;
             case 4:
+                output_buffer[i] = input_buffer[i];
                 break;
             case 5:
-                ThisSample.fSample = single_delay(ThisSample, true);
+                // F = Freeverb = just set left-sample
+                freeverb_buffer[0] = input_buffer[i];
+                tmpIndex = i;
                 break;
             case 6:
                 // G = Gverb!!
                 x = input_buffer[i];
                 gverb_do(parrot_gverb,x,&yl,&yr);
                 ThisSample.fSample = WetDry(x,yl);
+                output_buffer[i] = ThisSample.fSample;
                 break;
             case 7:
                 //float tmp = input_buffer[i];
@@ -195,9 +210,9 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 break;
             default:
                 ThisSample.fSample = single_tap(ThisSample, glbFeedback, true);
+                output_buffer[i] = ThisSample.fSample;
                 break;
         }
-        output_buffer[i] = ThisSample.fSample;
         //ReadPointer_L = ReadPointer_L++ & BUF_LEN;
         /*
         *   Right Channel Sample
@@ -212,30 +227,40 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
         ReadPointer_R = ((WritePointer + BUF_LEN) - glbDelay_R) % BUF_LEN;
         ThisSample.fSample = input_buffer[i];
         DrySample.fSample = ThisSample.fSample;
-        switch(glbAlgorithm){
+        switch(tmpAlgorithm){
             case 0:
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, false));
+                output_buffer[i] = ThisSample.fSample;
                 break;
             case 1:
                 ThisSample.fSample = WetDry(DrySample.fSample,Ping_Pong(ThisSample, glbFeedback, false));
+                output_buffer[i] = ThisSample.fSample;
                 break;
             case 2:
                 // BUT delay change only affects Left Channel
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, false));
+                output_buffer[i] = ThisSample.fSample;
                 break;
             case 3:
                 // BUT delay change only affects Right Channel
                 ThisSample.fSample = WetDry(DrySample.fSample,single_tap(ThisSample, glbFeedback, false));
+                output_buffer[i] = ThisSample.fSample;
                 break;
             case 4:
+                output_buffer[i] = input_buffer[i];
                 break;
             case 5:
-                ThisSample.fSample = single_delay(ThisSample, false);
+                // F = Freeverb!!
+                freeverb_buffer[1] = input_buffer[i];
+                fv_process(&parrot_freeverb, &freeverb_buffer[0], 1);
+                output_buffer[tmpIndex] = freeverb_buffer[0];
+                output_buffer[i] = freeverb_buffer[1];
                 break;
             case 6:
                 // G = Gverb!
                 // yr was calculated in Left Channel, so is just output here
                 ThisSample.fSample = WetDry(x,yr);
+                output_buffer[i] = ThisSample.fSample;
                 break;
             case 7:
                 //float tmp = input_buffer[i];
@@ -247,9 +272,9 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 break;
             default:
                 ThisSample.fSample = single_tap(ThisSample, glbFeedback, false);
+                output_buffer[i] = ThisSample.fSample;
                 break;
-        }
-        output_buffer[i] = ThisSample.fSample;
+            }
         //ReadPointer_R = ReadPointer_R++ & BUF_LEN;
         WritePointer++;
         WritePointer &= BUF_LEN;
@@ -395,6 +420,11 @@ int main(){
 	 * @param float taillevel
      */
     parrot_gverb = gverb_new(48000.f, 41.f, 40.f, 7.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f);
+    /**
+     * @brief instantiate a freeverb instance
+     * 
+     */
+    fv_init(&parrot_freeverb);
 
     /**
      * @brief Start the Audio I2S interface, which uses pio1
