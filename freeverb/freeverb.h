@@ -7,11 +7,11 @@
 ** Public domain C implementation of the original freeverb, with the addition of
 ** support for samplerates other than 44.1khz.
 **
-** Original C++ version written by Jezard at Dreampoint, June 2000
+** Original C++ version written by Jezar at Dreampoint, June 2000
 */
 
-#define FV_NUMCOMBS       8   //was 8
-#define FV_NUMALLPASSES   4   //was 4
+#define FV_NUMCOMBS       8
+#define FV_NUMALLPASSES   4
 #define FV_MUTED          0.0
 #define FV_FIXEDGAIN      0.015
 #define FV_SCALEWET       3.0
@@ -34,7 +34,7 @@ typedef struct {
   float feedback;
   float filterstore;
   float damp1, damp2;
-  //float buf[4096];      // was 4096
+  //float buf[4096]; 
   float * buf;
   int bufsize;
   int bufidx;
@@ -42,7 +42,7 @@ typedef struct {
 
 typedef struct {
   float feedback;
-  //float buf[2048];      // was 2048
+  //float buf[2048];
   float * buf;
   int bufsize;
   int bufidx;

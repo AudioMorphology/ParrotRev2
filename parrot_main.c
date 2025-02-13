@@ -35,6 +35,7 @@ SOFTWARE.
 #include "parrot.h"
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
+#include "malloc.h"
 #include "hardware/dma.h"
 #include "hardware/adc.h"
 #include "hardware/clocks.h"
@@ -42,13 +43,13 @@ SOFTWARE.
 #include "psram_spi.h"
 #include "hardware/sync.h"
 #include "arm_math.h"
-//#include "pverb/pverb.h"
 #include "freeverb/freeverb.h"
 #include "gverb/include/gverbdsp.h"
 #include "gverb/include/gverb.h"
+#include "pverb/pverb.h"
 
 // There are separate Read pointers for 
-// Left and Riht channels, though only one 
+// Left and Right channels, though only one 
 // write pointer, as everythign is written to 
 // a single here-and-now position, but read
 // accoring to differing delays Left and Right
@@ -87,7 +88,7 @@ int spinlock_num_glbDelay;          // used to store the number of the spinlock
 spin_lock_t *spinlock_glbDelay;     // Used to lock access to glbDelay
 ty_gverb * parrot_gverb;
 fv_Context parrot_freeverb;
-//pv_Context parrot_pverb;
+pv_Context parrot_pverb;
 
 /**
  * @brief An array of multipliers, which are applied to the master internal
@@ -108,7 +109,8 @@ static float input_buffer[STEREO_BUFFER_SIZE * 2];
 static float output_buffer[STEREO_BUFFER_SIZE * 2];
 float *inbuffptr = &input_buffer[0];
 float *outbuffptr = &output_buffer[0];
-static float freeverb_buffer[10];
+static float freeverb_buffer[2];
+static float pverb_buffer[2];
 
 // Multi-tap delay element
 typedef struct tap_element{
@@ -120,7 +122,6 @@ int get_sign(int32_t value)
 {
     return (value & 0x80000000) ? -1 : (int)(value != 0);
 }
-
 
 /**
  * @brief process a buffer of Audio data
@@ -186,15 +187,19 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 output_buffer[i] = ThisSample.fSample;
                 break;
             case 4:
-                output_buffer[i] = input_buffer[i];
+                // Pverb = just set left-sample
+                pverb_buffer[0] = input_buffer[i];
+                tmpIndex = i;                
                 break;
             case 5:
                 // F = Freeverb = just set left-sample
+                psram_write32(&psram_spi, (WritePointer << 3),ThisSample.iSample);  //just to make sure the buffer is OK
                 freeverb_buffer[0] = input_buffer[i];
                 tmpIndex = i;
                 break;
             case 6:
                 // G = Gverb!!
+                psram_write32(&psram_spi, (WritePointer << 3),ThisSample.iSample);
                 x = input_buffer[i];
                 gverb_do(parrot_gverb,x,&yl,&yr);
                 ThisSample.fSample = WetDry(x,yl);
@@ -205,6 +210,7 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 //if (tmp > 0.99f) tmp = 0.99f;
                 //if (tmp < -0.3f) tmp = -0.3f;
                 //output_buffer[i] = tmp; 
+                psram_write32(&psram_spi, (WritePointer << 3),ThisSample.iSample);
                 output_buffer[i] = input_buffer[i];
                 //output_buffer[i] = WaveFolder(input_buffer[i],glbWet);
                 break;
@@ -247,10 +253,16 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 output_buffer[i] = ThisSample.fSample;
                 break;
             case 4:
-                output_buffer[i] = input_buffer[i];
+                // Pverb!!
+                psram_write32(&psram_spi, (WritePointer << 3) + 4,ThisSample.iSample);
+                pverb_buffer[1] = input_buffer[i];
+                pv_process(&parrot_pverb, &pverb_buffer[0], 1);
+                output_buffer[tmpIndex] = pverb_buffer[0];
+                output_buffer[i] = pverb_buffer[1];
                 break;
             case 5:
                 // F = Freeverb!!
+                psram_write32(&psram_spi, (WritePointer << 3) + 4,ThisSample.iSample);
                 freeverb_buffer[1] = input_buffer[i];
                 fv_process(&parrot_freeverb, &freeverb_buffer[0], 1);
                 output_buffer[tmpIndex] = freeverb_buffer[0];
@@ -259,6 +271,7 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
             case 6:
                 // G = Gverb!
                 // yr was calculated in Left Channel, so is just output here
+                psram_write32(&psram_spi, (WritePointer << 3) + 4,ThisSample.iSample);
                 ThisSample.fSample = WetDry(x,yr);
                 output_buffer[i] = ThisSample.fSample;
                 break;
@@ -267,6 +280,7 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 //if (tmp > 0.99f) tmp = 0.99f;
                 //if (tmp < -0.3f) tmp = -0.3f;
                 //output_buffer[i] = tmp; 
+                psram_write32(&psram_spi, (WritePointer << 3) + 4,ThisSample.iSample);
                 output_buffer[i] = input_buffer[i];
                 //output_buffer[i] = WaveFolder(input_buffer[i],glbWet);
                 break;
@@ -341,6 +355,10 @@ void checkReset(){
             }
             glbDelay_L = targetDelay_L; //be done with it!
             glbDelay_R = targetDelay_R; //be done with it!
+            // Flush / Mute Gverb & Freeverb
+            gverb_flush(parrot_gverb);
+            fv_mute(&parrot_freeverb);
+            pv_mute(&parrot_pverb);
             restore_interrupts(InterruptStatus);
             // Un-Mute the output
             gpio_put(XSMT_PIN,1);
@@ -361,11 +379,14 @@ int main(){
     // Serial port initialisation (Using USB for stdio)
     stdio_init_all();
     // Pre-start delay for testing
-    //for(int i = 1;i <= 20; i++){
-    //  printf("Waiting to start %d\n",20-i);
-    //  sleep_ms(1000);
-    //}
-    
+    for(int i = 1;i <= 20; i++){
+      printf("Waiting to start %d\n",20-i);
+      sleep_ms(1000);
+    }
+    for(int i = 1;i <= 20; i++){
+        printf("\n",20-i);
+    }
+      
     // Onboard LED (just in case we use it)
     gpio_init(ONBOARD_LED);
     gpio_set_dir(ONBOARD_LED, GPIO_OUT);
@@ -407,6 +428,9 @@ int main(){
     glbEncoderSw = 0;
     LatestEncoderSw = 0;
     EncoderSwChangedTime = time_us_64();
+
+    size_t initial_space = get_free_ram();
+    printf("Initial free RAM: %d\n",initial_space);
     /**
      * @brief instantiate a gverb instance
      * @param int srate, 
@@ -420,12 +444,25 @@ int main(){
 	 * @param float taillevel
      */
     parrot_gverb = gverb_new(48000.f, 41.f, 40.f, 7.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f);
+
+    size_t space1 = get_free_ram();
+    printf("RAM used by gverb: %d\n",initial_space - space1);
     /**
      * @brief instantiate a freeverb instance
      * 
      */
     fv_init(&parrot_freeverb);
-
+    size_t space2 = get_free_ram();
+    printf("RAM used by freeverb: %d\n",space1 - space2);
+    printf("Free RAM remaining: %d\n",space2);
+    /**
+     * @brief instantiate a pverb instance
+     */
+    pv_init(&parrot_pverb);
+    size_t space3 = get_free_ram();
+    printf("RAM used by pverb: %d\n",space2 - space3);
+    printf("Free RAM remaining: %d\n",space3);
+    
     /**
      * @brief Start the Audio I2S interface, which uses pio1
      */

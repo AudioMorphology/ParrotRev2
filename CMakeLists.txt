@@ -40,7 +40,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/freeverb/freeverb.c
     ${CMAKE_CURRENT_LIST_DIR}/gverb/gverb.c
     ${CMAKE_CURRENT_LIST_DIR}/gverb/gverbdsp.c
-    #${CMAKE_CURRENT_LIST_DIR}/pverb/pverb.c
+    ${CMAKE_CURRENT_LIST_DIR}/pverb/pverb.c
     ${CMAKE_CURRENT_LIST_DIR}/i2s/i2s.c
     parrot_func.c
 )

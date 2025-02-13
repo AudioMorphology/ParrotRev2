@@ -31,13 +31,28 @@ SOFTWARE.
 #include <stdio.h>
 #include "parrot.h"
 #include "psram_spi.h"
+#include "malloc.h"
 #include <arm_math.h>
-
 #include "pico/float.h"
 #define SHIFT_AMOUNT 8
 
 #define FUZZ(x) CubicAmplifier(CubicAmplifier(CubicAmplifier(CubicAmplifier(x))))
 #define RTH(x) rational_tanh(x);
+
+/**
+ * @brief Get free RAM using static memory defines
+ *        cf. https://forums.raspberrypi.com/viewtopic.php?t=347638#p2082565
+ *
+ * @return size_t
+ */
+size_t get_free_ram()
+{
+    extern char __StackLimit, __bss_end__;
+    size_t total_heap = &__StackLimit - &__bss_end__;
+    struct mallinfo info = mallinfo();
+    return total_heap - info.uordblks;
+}
+
 
 /**
  * @brief wavefolder

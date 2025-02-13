@@ -1,3 +1,11 @@
+/*
+** freeverb v0.1
+**
+** Public domain C implementation of the original freeverb, with the addition of
+** support for samplerates other than 44.1khz.
+**
+** Original C++ version written by Jezar at Dreampoint, June 2000
+*/
 #include "freeverb.h"
 #include <stdlib.h>
 
@@ -111,21 +119,20 @@ void fv_set_samplerate(fv_Context *ctx, float value) {
   //const int allpasses[] = { 556, 441, 341, 225 }; // 44100 Values
   const int allpasses[] = { 605, 480, 371, 245 }; // 48k Version
   //double multiplier = value / FV_INITIALSR;
-  double multiplier = 1.0;
   
   /* init comb buffers */
   for (int i = 0; i < FV_NUMCOMBS; i++) {
-    ctx->combl[i].bufsize = combs[i] * multiplier;
+    ctx->combl[i].bufsize = combs[i];
     ctx->combl[i].buf = (float *)calloc(ctx->combl[i].bufsize + 1,sizeof(float));
-    ctx->combr[i].bufsize = (combs[i] + FV_STEREOSPREAD) * multiplier;
+    ctx->combr[i].bufsize = (combs[i] + FV_STEREOSPREAD);
     ctx->combr[i].buf = (float *)calloc(ctx->combr[i].bufsize + 1,sizeof(float));
   }
 
   /* init allpass buffers */
   for (int i = 0; i < FV_NUMALLPASSES; i++) {
-    ctx->allpassl[i].bufsize = allpasses[i] * multiplier;
+    ctx->allpassl[i].bufsize = allpasses[i];
     ctx->allpassl[i].buf = (float *)calloc(ctx->allpassl[i].bufsize + 1,sizeof(float));
-    ctx->allpassr[i].bufsize = (allpasses[i] + FV_STEREOSPREAD) * multiplier;
+    ctx->allpassr[i].bufsize = (allpasses[i] + FV_STEREOSPREAD);
     ctx->allpassr[i].buf = (float *)calloc(ctx->allpassr[i].bufsize + 1,sizeof(float));
   }
 }

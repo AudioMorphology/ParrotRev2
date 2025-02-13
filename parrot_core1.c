@@ -313,6 +313,8 @@ void updateFeedback(){
       if (glbFeedback < 0.01) glbFeedback = 0.0;
       // use this value to update the gverb -> reverbtime (scale of 0 to 10?)
       gverb_set_revtime(parrot_gverb, glbFeedback * 10.0f);
+      fv_set_roomsize(&parrot_freeverb,glbFeedback);
+      pv_set_roomsize(&parrot_pverb,glbFeedback);
       //printf("Raw: %d, Average = %d, Feedback: %f\n",Feedback_raw, Feedback_Average, glbFeedback);
 }
 /**
@@ -359,6 +361,11 @@ void updateWetDry(){
       if (glbWet > 0.97) glbWet = 1.0;
       if (glbWet < 0.05) glbWet = 0.0;
       glbDry = 1 - glbWet;
+      fv_set_dry(&parrot_freeverb,glbDry);
+      fv_set_wet(&parrot_freeverb,glbWet);
+      pv_set_dry(&parrot_pverb,glbDry);
+      pv_set_wet(&parrot_pverb,glbWet);
+
       //printf("Raw: %d, Average = %d, Wet: %f, Dry: %f\n",WetDry_raw, WetDry_Average, glbWet, glbDry);
 }
 /**

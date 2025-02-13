@@ -32,6 +32,7 @@ SOFTWARE.
 #define PARROT_H
 #include "psram_spi.h"
 #include "freeverb/freeverb.h"
+#include "pverb/pverb.h"
 #include "gverb/include/gverb.h"
 
 // External Clock input interrupt
@@ -96,7 +97,7 @@ static const uint Feedback_MA_Len = 3;          // Length of the Feedback Moving
 static const uint Tick_MA_Len = 1;              // Length of the Rotary Encoder tick speed Moving Average ring buffer
 //static const uint32_t BUF_LEN = 0x7FFFFC;       // Actual Audio Buffer length in Mb = 8Mb. 
 // GPIO Pin definitions
-static const uint32_t BUF_LEN = 0xFFFFF;        // PSRAM buffer length in L-R Sample pairs 
+static const uint32_t BUF_LEN = 0x7FFFF;        // PSRAM buffer length in L-R Sample pairs 
 static const uint ALGORITHM_0 = 0;              // LSB of Algorithm 8-Way BCD Switch    Physical Pin 1
 static const uint ALGORITHM_1 = 1;              // MSB of Algorithm 8-Way BCD Switch    Physical Pin 2
 static const uint ALGORITHM_2 = 2;              // MSB of Algorithm 8-Way BCD Switch    Physical Pin 4
@@ -146,7 +147,8 @@ extern float divisors[];
 extern int glbAlgorithm;
 extern uint64_t DeBounceTime;
 extern ty_gverb * parrot_gverb;
-//extern fv_Context parrot_freeverb;
+extern fv_Context parrot_freeverb;
+extern pv_Context parrot_pverb;
 
 //  Global variables defined in parrot_core1.c
 extern _Atomic int32_t ExtClockPeriod;     // External Clock Period (rising edge to rising edge)
@@ -170,6 +172,7 @@ extern float FeedbackPercent;
 void core1_entry(void);
 
 // function prototypes - parrot_func.c
+size_t get_free_ram(void);
 float WaveFolder(float, float);
 float WaveWrapper(float, float);
 extern psram_spi_inst_t psram_spi;

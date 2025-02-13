@@ -80,9 +80,9 @@ static bool validate_sck_bck_sync(pio_i2s_clocks* clocks) {
     float ratio      = clocks->sck_pio_hz / clocks->bck_pio_hz;
     float actual_sck = clocks->sck_pio_hz / (float)i2s_sck_program_pio_mult;
     float actual_bck = clocks->bck_pio_hz / (float)i2s_out_master_program_pio_mult;
-    printf("Clock speed for SCK: %f (PIO %f Hz with divider %d.%d)\n", actual_sck, clocks->sck_pio_hz, clocks->sck_d, clocks->sck_f);
-    printf("Clock speed for BCK: %f (PIO %f Hz with divider %d.%d)\n", actual_bck, clocks->bck_pio_hz, clocks->bck_d, clocks->bck_f);
-    printf("Clock Ratio: %f\n", ratio);
+    //printf("Clock speed for SCK: %f (PIO %f Hz with divider %d.%d)\n", actual_sck, clocks->sck_pio_hz, clocks->sck_d, clocks->sck_f);
+    //printf("Clock speed for BCK: %f (PIO %f Hz with divider %d.%d)\n", actual_bck, clocks->bck_pio_hz, clocks->bck_d, clocks->bck_f);
+    //printf("Clock Ratio: %f\n", ratio);
     float whole_ratio;
     float fractional_ratio = modff(ratio, &whole_ratio);
     return (fractional_ratio == 0.0f);
