@@ -84,6 +84,7 @@ uint32_t targetDelay_L;             // The target Delay (in samples) - glbDelay 
 uint32_t targetDelay_R;             // The target Delay (in samples) - glbDelay will ramp towards this value
 int32_t PreviousClockPeriod = 0;    //
 uint32_t glbIncrement = 1;          // How many samples the delay is increased or decreased by via the rotary encoder
+int glbEuclideanFill;               // How many steps are ASctive within the step length
 int spinlock_num_glbDelay;          // used to store the number of the spinlock
 spin_lock_t *spinlock_glbDelay;     // Used to lock access to glbDelay
 ty_gverb * parrot_gverb;
@@ -100,6 +101,8 @@ pv_Context parrot_pverb;
  * 1/12 1/9 1/8 1/6 1/4 1/3 1/2 1* 2* 3* 4* 6* 8* 9* 12*
  */
 float divisors[] = {1,2,3,4,6,8,9,12,1,0.5,0.333333,0.25,0.166666,0.125,0.111111,0.083333};
+int EuclideanSteps[] = {1,2,3,4,6,8,9,12,1,2,3,4,6,8,9,12};
+int EuclideanHits[12];
 
 psram_spi_inst_t* async_spi_inst;
 psram_spi_inst_t psram_spi;
@@ -206,13 +209,8 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 output_buffer[i] = ThisSample.fSample;
                 break;
             case 7:
-                //float tmp = input_buffer[i];
-                //if (tmp > 0.99f) tmp = 0.99f;
-                //if (tmp < -0.3f) tmp = -0.3f;
-                //output_buffer[i] = tmp; 
-                psram_write32(&psram_spi, (WritePointer << 3),ThisSample.iSample);
-                output_buffer[i] = input_buffer[i];
-                //output_buffer[i] = WaveFolder(input_buffer[i],glbWet);
+                ThisSample.fSample = WetDry(DrySample.fSample,Euclidean_Delay(ThisSample, glbFeedback, true));
+                output_buffer[i] = ThisSample.fSample;
                 break;
             default:
                 ThisSample.fSample = single_tap(ThisSample, glbFeedback, true);
@@ -276,13 +274,8 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 output_buffer[i] = ThisSample.fSample;
                 break;
             case 7:
-                //float tmp = input_buffer[i];
-                //if (tmp > 0.99f) tmp = 0.99f;
-                //if (tmp < -0.3f) tmp = -0.3f;
-                //output_buffer[i] = tmp; 
-                psram_write32(&psram_spi, (WritePointer << 3) + 4,ThisSample.iSample);
-                output_buffer[i] = input_buffer[i];
-                //output_buffer[i] = WaveFolder(input_buffer[i],glbWet);
+                ThisSample.fSample = WetDry(DrySample.fSample,Euclidean_Delay(ThisSample, glbFeedback, false));
+                output_buffer[i] = ThisSample.fSample;
                 break;
             default:
                 ThisSample.fSample = single_tap(ThisSample, glbFeedback, false);
@@ -424,7 +417,7 @@ int main(){
     glbDelay_L = 0;
     glbDelay_R = 0;
     ExtClockPeriod = 48000;
-
+    glbEuclideanFill = 1;
     glbEncoderSw = 0;
     LatestEncoderSw = 0;
     EncoderSwChangedTime = time_us_64();

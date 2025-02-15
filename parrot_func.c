@@ -99,7 +99,52 @@ float CubicAmplifier( float input )
     }
     return output;
 }
-
+/**
+ * @brief Euclidean Delay
+ * 
+ * A Multi-tap delay, where the taps are either ON or OFF 
+ * depending on the current Euclidean sequence, which is
+ * calculated as a number of 'Hits' within a given number
+ * of Steps.
+ * 
+ * The gain applied to each successive tap is decreased
+ * compared to the inital Gain amount
+ */
+float Euclidean_Delay(union uSample InSample, float gain, bool IsLeft){
+    union uSample ReadSample;
+    if (IsLeft == true){
+        uint32_t LocalDelay_L = glbDelay_L;
+        for (int thisStep = 0; thisStep < EuclideanSteps[glbDivisor];thisStep++){
+            //check whether this step is a 'hit'
+            if(EuclideanHits[thisStep]== 1){
+                uint32_t LocalReadPtr_L = ((WritePointer + BUF_LEN) - LocalDelay_L) % BUF_LEN;
+                ReadSample.iSample = psram_read32(&psram_spi, ReadPointer_L << 3);
+                InSample.fSample += ReadSample.fSample * gain;
+            }
+            // need to reduce the gain in sucessive steps
+            gain *= 0.7f;
+            LocalDelay_L += glbDelay_L;
+            if (LocalDelay_L > BUF_LEN){LocalDelay_L = BUF_LEN;}
+        }
+        psram_write32(&psram_spi, WritePointer<<3,InSample.iSample);
+    } else {
+        uint32_t LocalDelay_R = glbDelay_R;
+        for (int thisStep = 0; thisStep < EuclideanSteps[glbDivisor];thisStep++){
+            //check whether this step is a 'hit'
+            if(EuclideanHits[thisStep]== 1){
+                uint32_t LocalReadPtr_R = ((WritePointer + BUF_LEN) - LocalDelay_R) % BUF_LEN;
+                ReadSample.iSample = psram_read32(&psram_spi, (ReadPointer_R << 3)+4);
+                InSample.fSample += ReadSample.fSample * gain;
+            }
+            // need to reduce the gain in sucessive steps
+            gain *= 0.7f;
+            LocalDelay_R += glbDelay_R;
+            if (LocalDelay_R > BUF_LEN){LocalDelay_R = BUF_LEN;}
+        }
+        psram_write32(&psram_spi, (WritePointer<<3)+4,InSample.iSample);
+    }
+    return ReadSample.fSample;
+}
 /**
  * @brief Single Delay
  * 
@@ -150,7 +195,141 @@ float processAllPassFilter(AllPassFilter *filter, float input) {
 }
 
 
+/**
+ * C Equivalent of the Arduino bitRead() function
+ */
+int bitRead(unsigned int value, unsigned int bit) {
+    return (value >> bit) & 1;
+}
 
+/**
+ * @brief find the binary length of a number
+ */
+int findlength(unsigned int bnry){
+    bool lengthfound = false;
+    int length=1; // no number can have a length of zero - single 0 has a length of one, but no 1s for the sytem to count
+    for (int q=32;q>=0;q--){
+      int r=bitRead(bnry,q);
+      if(r==1 && lengthfound == false){
+        length=q+1;
+        lengthfound = true;
+      }
+    }
+    return length;
+  }
+
+/**
+ * @brief concatenate two binary numbers
+ */
+unsigned int ConcatBin(unsigned int bina, unsigned int binb){
+    int binb_len=findlength(binb);
+    unsigned int sum=(bina<<binb_len);
+    sum = sum | binb;
+    return sum;
+  }
+
+
+/**
+ * @brief calculate Euclidean fill, given a number of steps and a fill number
+ * 
+ * This uses the Bjorklund algorithm to calculate a pulse pattern given a number
+ * of steps and a fill value. The fill Value needs to be less than or equal to the 
+ * number of steps
+ * 
+ * This returns a 16-Bit unsigned Int binary pattern. Our maximum number of steps
+ * is 12, so 16-Bits will hold that quite adequately. The idea is that we pre-calculate
+ * all possible Step/Fill combinations.
+ * 
+ * This is a variation of Tom Whitwell's Euclidean Sequencer Arduino code 
+ * 
+ * @param n Total number of steps
+ * @param k Number of 'Hits' to be evenly distibuted across the steps
+ */
+unsigned int bjorklund(int n, int k){
+    int pauses = n-k;
+    int pulses = k;
+    int per_pulse = pauses/k;
+    int remainder = pauses%pulses;  
+    unsigned int workbeat[n];
+    unsigned int outbeat;
+    unsigned int working;
+    int workbeat_count=n;
+    int a; 
+    int b; 
+    int trim_count;
+    for (a=0;a<n;a++){ // Populate workbeat with unsorted pulses and pauses 
+      if (a<pulses){
+        workbeat[a] = 1;
+      }
+      else {
+        workbeat [a] = 0;
+      }
+    }
+  
+    if (per_pulse>0 && remainder <2){ // Handle easy cases where there is no or only one remainer  
+      for (a=0;a<pulses;a++){
+        for (b=workbeat_count-1; b>workbeat_count-per_pulse-1;b--){
+          workbeat[a]  = ConcatBin(workbeat[a], workbeat[b]);
+        }
+        workbeat_count = workbeat_count-per_pulse;
+      }
+  
+      outbeat = 0; // Concatenate workbeat into outbeat - according to workbeat_count 
+      for (a=0;a < workbeat_count;a++){
+        outbeat = ConcatBin(outbeat,workbeat[a]);
+      }
+      return outbeat;
+    }
+  
+    else { 
+      int groupa = pulses;
+      int groupb = pauses; 
+      int iteration=0;
+      if (groupb<=1){
+      }
+      while(groupb>1){ //main recursive loop
+        if (groupa>groupb){ // more Group A than Group B
+          int a_remainder = groupa-groupb; // what will be left of groupa once groupB is interleaved 
+          trim_count = 0;
+          for (a=0; a<groupa-a_remainder;a++){ //count through the matching sets of A, ignoring remaindered
+            workbeat[a]  = ConcatBin (workbeat[a], workbeat[workbeat_count-1-a]);
+            trim_count++;
+          }
+          workbeat_count = workbeat_count-trim_count;
+          groupa=groupb;
+          groupb=a_remainder;
+        }
+        else if (groupb>groupa){ // More Group B than Group A
+          int b_remainder = groupb-groupa; // what will be left of group once group A is interleaved 
+          trim_count=0;
+          for (a = workbeat_count-1;a>=groupa+b_remainder;a--){ //count from right back through the Bs
+            workbeat[workbeat_count-a-1] = ConcatBin (workbeat[workbeat_count-a-1], workbeat[a]);
+            trim_count++;
+          }
+          workbeat_count = workbeat_count-trim_count;
+          groupb=b_remainder;
+        }
+        else if (groupa == groupb){ // groupa = groupb 
+          trim_count=0;
+          for (a=0;a<groupa;a++){
+            workbeat[a] = ConcatBin (workbeat[a],workbeat[workbeat_count-1-a]);
+            trim_count++;
+          }
+          workbeat_count = workbeat_count-trim_count;
+          groupb=0;
+        }
+        else {
+          //printf("ERROR");
+        }
+        iteration++;
+      }
+    outbeat = 0; // Concatenate workbeat into outbeat - according to workbeat_count 
+      for (a=0;a < workbeat_count;a++){
+        outbeat = ConcatBin(outbeat,workbeat[a]);
+      }
+      return outbeat;
+    }
+  }
 
 /**
  * @brief Single-tap delay

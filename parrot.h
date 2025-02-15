@@ -143,7 +143,10 @@ extern uint32_t WritePointer;
 extern float glbFeedback;
 extern float glbRatio;
 extern int glbDivisor;
+extern int glbEuclideanFill; 
 extern float divisors[];
+extern int EuclideanSteps[];
+extern int EuclideanHits[];
 extern int glbAlgorithm;
 extern uint64_t DeBounceTime;
 extern ty_gverb * parrot_gverb;
@@ -172,10 +175,14 @@ extern float FeedbackPercent;
 void core1_entry(void);
 
 // function prototypes - parrot_func.c
+unsigned int bjorklund(int,int);
+unsigned int euclid_bit_pattern(int,int);
+int bitRead(unsigned int, unsigned int);
 size_t get_free_ram(void);
 float WaveFolder(float, float);
 float WaveWrapper(float, float);
 extern psram_spi_inst_t psram_spi;
+float Euclidean_Delay(union uSample, float, bool);
 float single_delay(union uSample, bool);
 float single_tap(union uSample, float, bool);
 float Ping_Pong(union uSample, float, bool);
@@ -196,4 +203,58 @@ __force_inline static float WetDry(float DrySample, float WetSample){
 float rational_tanh(float);
 float soft_clip(float);
 
+#define WORD16_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
+#define WORD16_TO_BINARY(byte)  \
+  ((byte) & 0x0008000 ? '1' : '0'), \
+  ((byte) & 0x0004000 ? '1' : '0'), \
+  ((byte) & 0x0002000 ? '1' : '0'), \
+  ((byte) & 0x0001000 ? '1' : '0'), \
+  ((byte) & 0x0000800 ? '1' : '0'), \
+  ((byte) & 0x0000400 ? '1' : '0'), \
+  ((byte) & 0x0000200 ? '1' : '0'), \
+  ((byte) & 0x0000100 ? '1' : '0'), \
+  ((byte) & 0x0000080 ? '1' : '0'), \
+  ((byte) & 0x0000040 ? '1' : '0'), \
+  ((byte) & 0x0000020 ? '1' : '0'), \
+  ((byte) & 0x0000010 ? '1' : '0'), \
+  ((byte) & 0x0000008 ? '1' : '0'), \
+  ((byte) & 0x0000004 ? '1' : '0'), \
+  ((byte) & 0x0000002 ? '1' : '0'), \
+  ((byte) & 0x0000001 ? '1' : '0') 
+
+
+#define WORD32_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
+#define WORD32_TO_BINARY(byte)  \
+  ((byte) & 0x8000000 ? '1' : '0'), \
+  ((byte) & 0x4000000 ? '1' : '0'), \
+  ((byte) & 0x2000000 ? '1' : '0'), \
+  ((byte) & 0x1000000 ? '1' : '0'), \
+  ((byte) & 0x0800000 ? '1' : '0'), \
+  ((byte) & 0x0400000 ? '1' : '0'), \
+  ((byte) & 0x0200000 ? '1' : '0'), \
+  ((byte) & 0x0100000 ? '1' : '0'), \
+  ((byte) & 0x0800000 ? '1' : '0'), \
+  ((byte) & 0x0400000 ? '1' : '0'), \
+  ((byte) & 0x0200000 ? '1' : '0'), \
+  ((byte) & 0x0100000 ? '1' : '0'), \
+  ((byte) & 0x0080000 ? '1' : '0'), \
+  ((byte) & 0x0040000 ? '1' : '0'), \
+  ((byte) & 0x0020000 ? '1' : '0'), \
+  ((byte) & 0x0010000 ? '1' : '0'), \
+  ((byte) & 0x0008000 ? '1' : '0'), \
+  ((byte) & 0x0004000 ? '1' : '0'), \
+  ((byte) & 0x0002000 ? '1' : '0'), \
+  ((byte) & 0x0001000 ? '1' : '0'), \
+  ((byte) & 0x0000800 ? '1' : '0'), \
+  ((byte) & 0x0000400 ? '1' : '0'), \
+  ((byte) & 0x0000200 ? '1' : '0'), \
+  ((byte) & 0x0000100 ? '1' : '0'), \
+  ((byte) & 0x0000080 ? '1' : '0'), \
+  ((byte) & 0x0000040 ? '1' : '0'), \
+  ((byte) & 0x0000020 ? '1' : '0'), \
+  ((byte) & 0x0000010 ? '1' : '0'), \
+  ((byte) & 0x0000008 ? '1' : '0'), \
+  ((byte) & 0x0000004 ? '1' : '0'), \
+  ((byte) & 0x0000002 ? '1' : '0'), \
+  ((byte) & 0x0000001 ? '1' : '0') 
 #endif

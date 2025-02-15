@@ -132,6 +132,30 @@ int8_t checkRotaryEncoder()
 void encoder_IRQ_handler(uint gpio,uint32_t events){
   int8_t dir = checkRotaryEncoder();
     if (dir != 0){
+      //Update the Euclidean Fill value, which cannot
+      //be greater than the number of steps. OR less
+      //than 1.
+      if (dir == 1) {
+      glbEuclideanFill++;
+      if (glbEuclideanFill > EuclideanSteps[glbDivisor]) {
+          glbEuclideanFill = EuclideanSteps[glbDivisor];
+        }
+      }
+      else {
+        glbEuclideanFill--;
+        if (glbEuclideanFill < 1) {
+          glbEuclideanFill = 1;
+        }
+      } 
+      unsigned int retval = bjorklund(EuclideanSteps[glbDivisor],glbEuclideanFill);
+      //printf("Steps: %d, Hits: %d, RetVal:"WORD16_PATTERN"\n",EuclideanSteps[glbDivisor],glbEuclideanFill,WORD16_TO_BINARY(retval));
+      //note the 'hits' within the EuclideanHits array
+      //clear it out first
+      for(int i=0; i<12; i++) {EuclideanHits[i]=0;}
+      //Then set each 'hit' according to the retval bit patters
+      for(int i=0;i<EuclideanSteps[glbDivisor];i++){
+        EuclideanHits[i] = bitRead(retval,(EuclideanSteps[glbDivisor]-i)-1);
+      } 
     // Only alter the delay if we're free-running
     if (SyncFree == 0){
       // Increment depends on the current increment value
@@ -420,6 +444,17 @@ void updateDivisor(){
         glbDivisor = (int)thisDivisor;
         glbRatio = divisors[thisDivisor];
         //printf("Divisor = %d, Ratio = %f\n",glbDivisor, glbRatio); 
+        //whenever the divisor changes, check that the Fill number doesn't exceed
+        //the number of steps
+        if (glbEuclideanFill > EuclideanSteps[glbDivisor]) {glbEuclideanFill = EuclideanSteps[glbDivisor];}
+        unsigned int retval = bjorklund(EuclideanSteps[glbDivisor],glbEuclideanFill);
+        //note the 'hits' within the EuclideanHits array
+        //clear it out first
+        for(int i=0; i<12; i++) {EuclideanHits[i]=0;}
+        //Then set each 'hit' according to the retval bit patters
+        for(int i=0;i<EuclideanSteps[glbDivisor];i++){
+          EuclideanHits[i] = bitRead(retval,(EuclideanSteps[glbDivisor]-i)-1);
+        } 
       }
     }
   }
