@@ -112,38 +112,37 @@ float CubicAmplifier( float input )
  */
 float Euclidean_Delay(union uSample InSample, float gain, bool IsLeft){
     union uSample ReadSample;
+    float LocalSample = 0.0;
+    float LocalGain = gain;
     if (IsLeft == true){
-        uint32_t LocalDelay_L = glbDelay_L;
+        // By dividing by the glbRatio figure the Local Delay will
+        // always be 1.0 * the Clock Period
+        uint32_t LocalDelay_L = (uint32_t)((float)glbDelay_L / glbRatio);
         for (int thisStep = 0; thisStep < EuclideanSteps[glbDivisor];thisStep++){
             //check whether this step is a 'hit'
             if(EuclideanHits[thisStep]== 1){
-                uint32_t LocalReadPtr_L = ((WritePointer + BUF_LEN) - LocalDelay_L) % BUF_LEN;
-                ReadSample.iSample = psram_read32(&psram_spi, ReadPointer_L << 3);
-                InSample.fSample += ReadSample.fSample * gain;
+                uint32_t LocalReadPtr_L = ((WritePointer + BUF_LEN) - (LocalDelay_L * (thisStep +1))) % BUF_LEN;
+                ReadSample.iSample = psram_read32(&psram_spi, LocalReadPtr_L << 3);
+                LocalSample += ReadSample.fSample * LocalGain;
+                LocalGain *= 0.5f; // Each tap reduce by 6dB 
             }
-            // need to reduce the gain in sucessive steps
-            gain *= 0.7f;
-            LocalDelay_L += glbDelay_L;
-            if (LocalDelay_L > BUF_LEN){LocalDelay_L = BUF_LEN;}
         }
         psram_write32(&psram_spi, WritePointer<<3,InSample.iSample);
     } else {
-        uint32_t LocalDelay_R = glbDelay_R;
+        uint32_t LocalDelay_R = (uint32_t)((float)glbDelay_R / glbRatio);
+        LocalGain = gain;
         for (int thisStep = 0; thisStep < EuclideanSteps[glbDivisor];thisStep++){
             //check whether this step is a 'hit'
             if(EuclideanHits[thisStep]== 1){
-                uint32_t LocalReadPtr_R = ((WritePointer + BUF_LEN) - LocalDelay_R) % BUF_LEN;
-                ReadSample.iSample = psram_read32(&psram_spi, (ReadPointer_R << 3)+4);
-                InSample.fSample += ReadSample.fSample * gain;
+                uint32_t LocalReadPtr_R = ((WritePointer + BUF_LEN) - (LocalDelay_R * (thisStep +1))) % BUF_LEN;
+                ReadSample.iSample = psram_read32(&psram_spi, (LocalReadPtr_R << 3)+4);
+                LocalSample += ReadSample.fSample * LocalGain;
+                LocalGain *= 0.5f; // Each tap reduce by 6dB 
             }
-            // need to reduce the gain in sucessive steps
-            gain *= 0.7f;
-            LocalDelay_R += glbDelay_R;
-            if (LocalDelay_R > BUF_LEN){LocalDelay_R = BUF_LEN;}
         }
         psram_write32(&psram_spi, (WritePointer<<3)+4,InSample.iSample);
     }
-    return ReadSample.fSample;
+    return LocalSample;
 }
 /**
  * @brief Single Delay

@@ -188,8 +188,8 @@ void encoder_IRQ_handler(uint gpio,uint32_t events){
         default:
           glbIncrement = 48000;
       }
-      if (glbAlgorithm != 3){
-        // If Algorithm = 3, don't change Left channel
+      if ((glbAlgorithm != 3) && (glbAlgorithm != 7)){
+        // If Algorithm = 3 or 7, don't change Left channel
         if (dir == 1){
           if ((targetDelay_L+glbIncrement) < BUF_LEN) targetDelay_L += glbIncrement; else targetDelay_L = BUF_LEN;
         }
@@ -228,8 +228,8 @@ void encoder_IRQ_handler(uint gpio,uint32_t events){
         default:
           glbIncrement = 48000;
       }
-      if (glbAlgorithm != 2){
-        // If Algorithm = 2, DON'T change Right channel
+      if ((glbAlgorithm != 2) && (glbAlgorithm != 7)){
+        // If Algorithm = 2 or 7, DON'T change Right channel
         if (dir == 1){
           if ((targetDelay_R+glbIncrement) < BUF_LEN) targetDelay_R += glbIncrement; else targetDelay_R = BUF_LEN;
         }

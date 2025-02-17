@@ -101,8 +101,8 @@ pv_Context parrot_pverb;
  * 1/12 1/9 1/8 1/6 1/4 1/3 1/2 1* 2* 3* 4* 6* 8* 9* 12*
  */
 float divisors[] = {1,2,3,4,6,8,9,12,1,0.5,0.333333,0.25,0.166666,0.125,0.111111,0.083333};
-int EuclideanSteps[] = {1,2,3,4,6,8,9,12,1,2,3,4,6,8,9,12};
-int EuclideanHits[12];
+int EuclideanSteps[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+int EuclideanHits[16];
 
 psram_spi_inst_t* async_spi_inst;
 psram_spi_inst_t psram_spi;
