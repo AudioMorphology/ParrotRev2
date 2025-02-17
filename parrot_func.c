@@ -38,7 +38,7 @@ SOFTWARE.
 
 #define FUZZ(x) CubicAmplifier(CubicAmplifier(CubicAmplifier(CubicAmplifier(x))))
 #define RTH(x) rational_tanh(x);
-
+uint32_t PrevTime, TimeNow;
 /**
  * @brief Get free RAM using static memory defines
  *        cf. https://forums.raspberrypi.com/viewtopic.php?t=347638#p2082565
@@ -110,39 +110,29 @@ float CubicAmplifier( float input )
  * The gain applied to each successive tap is decreased
  * compared to the inital Gain amount
  */
-float Euclidean_Delay(union uSample InSample, float gain, bool IsLeft){
+float Euclidean_Delay(float gain){
     union uSample ReadSample;
     float LocalSample = 0.0;
     float LocalGain = gain;
-    if (IsLeft == true){
-        // By dividing by the glbRatio figure the Local Delay will
-        // always be 1.0 * the Clock Period
-        uint32_t LocalDelay_L = (uint32_t)((float)glbDelay_L / glbRatio);
-        for (int thisStep = 0; thisStep < EuclideanSteps[glbDivisor];thisStep++){
-            //check whether this step is a 'hit'
-            if(EuclideanHits[thisStep]== 1){
-                uint32_t LocalReadPtr_L = ((WritePointer + BUF_LEN) - (LocalDelay_L * (thisStep +1))) % BUF_LEN;
-                ReadSample.iSample = psram_read32(&psram_spi, LocalReadPtr_L << 3);
-                LocalSample += ReadSample.fSample * LocalGain;
-                LocalGain *= 0.5f; // Each tap reduce by 6dB 
-            }
+    //!!TODO should this be uint32_t LocalDelay_L = (uint32_t)(((float)glbDelay_L / glbRatio)/(float)EuclideanSteps[glbDivisor]-1.0);
+    //!! or even +1??
+    uint32_t LocalDelay_L = (uint32_t)(((float)glbDelay_L / glbRatio)/(float)EuclideanSteps[glbDivisor]);
+//    TimeNow = time_us_32();
+//    if(TimeNow > PrevTime + 500000){
+//        PrevTime = TimeNow;
+//        printf("glbDelay_L: %d, glbRatio: %f, Local Delay: %d, Per Step: %d\n",glbDelay_L,glbRatio,LocalDelay_L,LocalDelay_L/EuclideanSteps[glbDivisor]);
+//    } 
+
+    for (int thisStep = 0; thisStep < EuclideanSteps[glbDivisor];thisStep++){
+        //check whether this step is a 'hit'
+        if(EuclideanHits[thisStep]== 1){
+            uint32_t LocalReadPtr_L = ((WritePointer + BUF_LEN) - (LocalDelay_L * (thisStep +1))) % BUF_LEN;
+            ReadSample.iSample = psram_read32(&psram_spi, LocalReadPtr_L << 3);
+            LocalSample += ReadSample.fSample * LocalGain;
+            LocalGain *= 0.5f; // Each tap reduce by 6dB 
         }
-        psram_write32(&psram_spi, WritePointer<<3,InSample.iSample);
-    } else {
-        uint32_t LocalDelay_R = (uint32_t)((float)glbDelay_R / glbRatio);
-        LocalGain = gain;
-        for (int thisStep = 0; thisStep < EuclideanSteps[glbDivisor];thisStep++){
-            //check whether this step is a 'hit'
-            if(EuclideanHits[thisStep]== 1){
-                uint32_t LocalReadPtr_R = ((WritePointer + BUF_LEN) - (LocalDelay_R * (thisStep +1))) % BUF_LEN;
-                ReadSample.iSample = psram_read32(&psram_spi, (LocalReadPtr_R << 3)+4);
-                LocalSample += ReadSample.fSample * LocalGain;
-                LocalGain *= 0.5f; // Each tap reduce by 6dB 
-            }
-        }
-        psram_write32(&psram_spi, (WritePointer<<3)+4,InSample.iSample);
-    }
-    return LocalSample;
+      }
+  return LocalSample;    
 }
 /**
  * @brief Single Delay

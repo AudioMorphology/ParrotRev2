@@ -182,7 +182,7 @@ size_t get_free_ram(void);
 float WaveFolder(float, float);
 float WaveWrapper(float, float);
 extern psram_spi_inst_t psram_spi;
-float Euclidean_Delay(union uSample, float, bool);
+float Euclidean_Delay(float);
 float single_delay(union uSample, bool);
 float single_tap(union uSample, float, bool);
 float Ping_Pong(union uSample, float, bool);

@@ -148,7 +148,7 @@ void encoder_IRQ_handler(uint gpio,uint32_t events){
         }
       } 
       unsigned int retval = bjorklund(EuclideanSteps[glbDivisor],glbEuclideanFill);
-      //printf("Steps: %d, Hits: %d, RetVal:"WORD16_PATTERN"\n",EuclideanSteps[glbDivisor],glbEuclideanFill,WORD16_TO_BINARY(retval));
+      printf("Steps: %d, Hits: %d, RetVal:"WORD16_PATTERN"\n",EuclideanSteps[glbDivisor],glbEuclideanFill,WORD16_TO_BINARY(retval));
       //note the 'hits' within the EuclideanHits array
       //clear it out first
       for(int i=0; i<12; i++) {EuclideanHits[i]=0;}
@@ -621,7 +621,7 @@ void core1_entry(){
           PreviousClockPeriod = ExtClockPeriod;
           targetDelay_L = (uint32_t)((float)ExtClockPeriod / SampleLength) * glbRatio;
           //printf("Ext Clock Period %d, SampleLength %f, TargetDelay: %d, Divisor: %f\n", ExtClockPeriod, SampleLength,targetDelay, glbRatio);
-          if (targetDelay_L > BUF_LEN) targetDelay_L = BUF_LEN;
+          //if (targetDelay_L > BUF_LEN) targetDelay_L = BUF_LEN;
           targetDelay_R = targetDelay_L;
       }
     }

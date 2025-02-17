@@ -100,9 +100,9 @@ pv_Context parrot_pverb;
  * 
  * 1/12 1/9 1/8 1/6 1/4 1/3 1/2 1* 2* 3* 4* 6* 8* 9* 12*
  */
-float divisors[] = {1,2,3,4,6,8,9,12,1,0.5,0.333333,0.25,0.166666,0.125,0.111111,0.083333};
-int EuclideanSteps[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
-int EuclideanHits[16];
+float divisors[] = {1.0,2.0,3.0,4.0,6.0,8.0,9.0,12.0,1.0,0.5,0.333333,0.25,0.166666,0.125,0.111111,0.083333};
+int EuclideanSteps[] = {1,2,3,4,6,8,9,12,1,2,3,4,6,8,9,12};
+int EuclideanHits[12];
 
 psram_spi_inst_t* async_spi_inst;
 psram_spi_inst_t psram_spi;
@@ -154,7 +154,7 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
     *   Left Channel Sample
     */
     for (size_t i = 0; i < num_frames * 2; i++) {
-        float x,yl,yr;
+        float yl,yr,xl,xr;
         // If the delay changes, gradually ramping the actual delay 
         // towards the target delay helps to reduce glitches. 
         if (glbDelay_L < targetDelay_L){
@@ -203,14 +203,15 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
             case 6:
                 // G = Gverb!!
                 psram_write32(&psram_spi, (WritePointer << 3),ThisSample.iSample);
-                x = input_buffer[i];
-                gverb_do(parrot_gverb,x,&yl,&yr);
-                ThisSample.fSample = WetDry(x,yl);
+                xl = input_buffer[i];
+                gverb_do(parrot_gverb,xl,&yl,&yr);
+                ThisSample.fSample = WetDry(xl,yl);
                 output_buffer[i] = ThisSample.fSample;
                 break;
             case 7:
-                ThisSample.fSample = WetDry(DrySample.fSample,Euclidean_Delay(ThisSample, glbFeedback, true));
-                output_buffer[i] = ThisSample.fSample;
+                xl = input_buffer[i];
+                psram_write32(&psram_spi, (WritePointer << 3),ThisSample.iSample);
+                tmpIndex = i;
                 break;
             default:
                 ThisSample.fSample = single_tap(ThisSample, glbFeedback, true);
@@ -270,11 +271,14 @@ static void process_audio(const int32_t* input, int32_t* output, size_t num_fram
                 // G = Gverb!
                 // yr was calculated in Left Channel, so is just output here
                 psram_write32(&psram_spi, (WritePointer << 3) + 4,ThisSample.iSample);
-                ThisSample.fSample = WetDry(x,yr);
+                ThisSample.fSample = WetDry(xl,yr);
                 output_buffer[i] = ThisSample.fSample;
                 break;
             case 7:
-                ThisSample.fSample = WetDry(DrySample.fSample,Euclidean_Delay(ThisSample, glbFeedback, false));
+                xr = input_buffer[i];
+                psram_write32(&psram_spi, (WritePointer << 3) + 4,ThisSample.iSample);
+                ThisSample.fSample = WetDry(DrySample.fSample,Euclidean_Delay(glbFeedback));
+                output_buffer[tmpIndex] = ThisSample.fSample;
                 output_buffer[i] = ThisSample.fSample;
                 break;
             default:
