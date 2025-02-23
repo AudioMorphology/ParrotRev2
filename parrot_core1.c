@@ -151,11 +151,15 @@ void encoder_IRQ_handler(uint gpio,uint32_t events){
       printf("Steps: %d, Hits: %d, RetVal:"WORD16_PATTERN"\n",EuclideanSteps[glbDivisor],glbEuclideanFill,WORD16_TO_BINARY(retval));
       //note the 'hits' within the EuclideanHits array
       //clear it out first
-      for(int i=0; i<12; i++) {EuclideanHits[i]=0;}
+      for(int i=0; i<16; i++) {EuclideanHits[i]=0;}
       //Then set each 'hit' according to the retval bit patters
       for(int i=0;i<EuclideanSteps[glbDivisor];i++){
         EuclideanHits[i] = bitRead(retval,(EuclideanSteps[glbDivisor]-i)-1);
       } 
+      for(int i=0;i<EuclideanSteps[glbDivisor];i++){
+        printf("%d",EuclideanHits[i]);
+      }
+      printf("\n");
     // Only alter the delay if we're free-running
     if (SyncFree == 0){
       // Increment depends on the current increment value
